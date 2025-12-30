@@ -2174,16 +2174,16 @@ local ITEM_COLORS = {
     ["Remington"] = Color3.fromRGB(255, 215, 0), -- ทอง
     ["AK47"] = Color3.fromRGB(255, 215, 0),     
     ["MP5"] = Color3.fromRGB(255, 215, 0),     
-    ["RPG"] = Color3.fromRGB(255, 215, 0)      
-    ["Crossbow"] = Color3.fromRGB(255, 215, 0)      
-    ["M16"] = Color3.fromRGB(255, 215, 0)      
-    ["Tactical Axe"] = Color3.fromRGB(255, 215, 0)      
-    ["Tactical Knife"] = Color3.fromRGB(255, 215, 0)      
-    ["Tactical Shovel"] = Color3.fromRGB(255, 215, 0)      
-    ["Marlin"] = Color3.fromRGB(255, 215, 0)      
-    ["Sailfish"] = Color3.fromRGB(255, 215, 0)      
-    ["DiamondPot"] = Color3.fromRGB(255, 215, 0)      
-    ["GoldenPot"] = Color3.fromRGB(255, 215, 0)      
+    ["RPG"] = Color3.fromRGB(255, 215, 0),      
+    ["Crossbow"] = Color3.fromRGB(255, 215, 0),      
+    ["M16"] = Color3.fromRGB(255, 215, 0),      
+    ["Tactical Axe"] = Color3.fromRGB(255, 215, 0),      
+    ["Tactical Knife"] = Color3.fromRGB(255, 215, 0),      
+    ["Tactical Shovel"] = Color3.fromRGB(255, 215, 0),      
+    ["Marlin"] = Color3.fromRGB(255, 215, 0),      
+    ["Sailfish"] = Color3.fromRGB(255, 215, 0),      
+    ["DiamondPot"] = Color3.fromRGB(255, 215, 0),      
+    ["GoldenPot"] = Color3.fromRGB(255, 215, 0),      
     ["GoldenTomatoSeeds"] = Color3.fromRGB(255, 215, 0)      
 }
 
@@ -2339,7 +2339,6 @@ EspTab:Toggle({
         end      
     end      
 })
-
 -- Services
 local Players = game:GetService("Players")
 local RunService = game:GetService("RunService")
