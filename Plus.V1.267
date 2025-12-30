@@ -599,8 +599,18 @@ WeaponTab:Toggle({
     end
 })
 
--- Hit Aura
+WeaponTab:Section({Title="auto hit :"})
+
+local Players = game:GetService("Players")
+local ReplicatedStorage = game:GetService("ReplicatedStorage")
+local RunService = game:GetService("RunService")
+local UserInputService = game:GetService("UserInputService")
+
+local player = Players.LocalPlayer
+local playerGui = player:WaitForChild("PlayerGui")
 getgenv().HitAuraEnabled = false
+
+-- หา CounterTable จาก getgc
 local CounterTable
 pcall(function()
     for _, Obj in ipairs(getgc(true)) do
@@ -617,8 +627,11 @@ pcall(function()
     SendRemote = Remotes:WaitForChild("Send", 5)
 end)
 
+-- NetSend
 local function NetSend(...)
-    if not CounterTable or not CounterTable.event or not SendRemote then return end
+    if not CounterTable or not CounterTable.event or not SendRemote then
+        return
+    end
     local args = {...}
     CounterTable.event = (CounterTable.event or 0) + 1
     pcall(function()
@@ -626,15 +639,19 @@ local function NetSend(...)
     end)
 end
 
+-- getActiveTool
 local function getActiveTool()
     local char = player.Character
     if not char then return nil end
     for _, obj in pairs(char:GetChildren()) do
-        if obj:IsA("Tool") then return obj end
+        if obj:IsA("Tool") then
+            return obj
+        end
     end
     return nil
 end
 
+-- getPlayersInRange
 local function getPlayersInRange(radius)
     local inRange = {}
     local char = player.Character
@@ -642,18 +659,21 @@ local function getPlayersInRange(radius)
     local pos = char.HumanoidRootPart.Position
     for _, p in pairs(Players:GetPlayers()) do
         if p ~= player and p.Character and p.Character:FindFirstChild("HumanoidRootPart")
-           and p.Character:FindFirstChild("Humanoid") and p.Character.Humanoid.Health > 0 then
+            and p.Character:FindFirstChild("Humanoid") and p.Character.Humanoid.Health > 0 then
             local dist = (p.Character.HumanoidRootPart.Position - pos).Magnitude
-            if dist <= radius then table.insert(inRange, p) end
+            if dist <= radius then
+                table.insert(inRange, p)
+            end
         end
     end
     return inRange
 end
 
-local autoLoop
+-- AttackNearby
 local function AttackNearby()
     local tool = getActiveTool()
     if not tool then return end
+    
     local targets = getPlayersInRange(12)
     for _, target in ipairs(targets) do
         local hrp = player.Character.HumanoidRootPart
@@ -665,6 +685,8 @@ local function AttackNearby()
     end
 end
 
+-- Auto Loop
+local autoLoop
 local function StartHitAura()
     if autoLoop then return end
     autoLoop = task.spawn(function()
@@ -677,24 +699,33 @@ end
 
 local function StopHitAura()
     getgenv().HitAuraEnabled = false
-    if autoLoop then task.cancel(autoLoop); autoLoop=nil end
+    if autoLoop then
+        task.cancel(autoLoop)
+        autoLoop = nil
+    end
 end
 
-WeaponTab:Toggle({
-    Title = "Hit Aura",
-    Value = getgenv().HitAuraEnabled,
-    Flag = "HitAura",
-    Callback = function(state)
-        if state then
-            getgenv().HitAuraEnabled = true
-            StartHitAura()
-            print("✅ Hit Aura: ON")
-        else
-            StopHitAura()
-            print("❌ Hit Aura: OFF")
-        end
+-- 🌟 ฟังก์ชัน Toggle (เรียกจาก UI)
+function ToggleHitAura(state)
+    if state then
+        getgenv().HitAuraEnabled = true
+        StartHitAura()
+        print("✅ Hit Aura: ON")
+    else
+        StopHitAura()
+        print("❌ Hit Aura: OFF")
     end
-})
+end
+
+ WeaponTab:Toggle({
+     Title = "Hit Aura",
+     Flag = "HitAura",
+     Default = false,
+     Callback = function(state)
+         ToggleHitAura(state)
+     end
+ })
+
 
 local SpeedEnabled = false
 local speedMultiplier = 0.10
