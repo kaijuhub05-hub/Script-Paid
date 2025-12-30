@@ -2387,3 +2387,158 @@ EspTab:Toggle({
         if state then enableMoneyESP() else disableMoneyESP() end
     end
 })
+
+local Players = game:GetService("Players")
+local LocalPlayer = Players.LocalPlayer
+local RunService = game:GetService("RunService")
+local TeleportService = game:GetService("TeleportService")
+local HttpService = game:GetService("HttpService")
+
+local placeId = game.PlaceId
+local jobInput = ""
+local TargetPlayers = 22
+local PlaceIdForHop = 104715542330896
+
+
+local statsButton = ServerTab:Button({
+    Title = "<font color=\"rgb(255,0,0)\">Ping : 0ms</font> | <font color=\"rgb(0,255,0)\">FPS : 0</font> | <font color=\"rgb(0,170,255)\">Players : 0</font>",
+    Callback = function()
+        -- ไม่ต้องทำอะไรเมื่อกด
+    end
+})
+
+-- ตัวแปรช่วยคำนวณ FPS
+local lastTime = tick()
+local frameCount = 0
+local fps = 0
+
+RunService.RenderStepped:Connect(function()
+    -- คำนวณ FPS
+    frameCount = frameCount + 1
+    local now = tick()
+    if now - lastTime >= 1 then
+        fps = frameCount
+        frameCount = 0
+        lastTime = now
+    end
+
+    -- ดึงค่าปิง
+    local ping = math.floor(LocalPlayer:GetNetworkPing() * 1000)
+
+    -- จำนวนผู้เล่น
+    local playerCount = #Players:GetPlayers()
+
+    -- อัปเดต Title ของปุ่ม
+    if statsButton and statsButton.SetTitle then
+        statsButton:SetTitle(
+            "<font color=\"rgb(255,0,0)\">Ping : "..ping.."ms</font> | "..
+            "<font color=\"rgb(0,255,0)\">FPS : "..fps.."</font> | "..
+            "<font color=\"rgb(0,170,255)\">Players : "..playerCount.."</font>"
+        )
+    end
+end)
+
+ServerTab:Section({Title = "💻Server state :"})
+ServerTab:Code({
+    Title = "Server Id :",
+    Code = [[ServerId : ]] .. game.JobId
+})
+
+-- ปุ่ม Copy JobId
+ServerTab:Button({
+    Title = "Copy serverId",
+    Callback = function()
+        setclipboard(game.JobId)
+        print("Copied JobId:", game.JobId)
+    end
+})
+
+-- Input ใส่ JobId
+ServerTab:Input({
+    Title = "🌐JobId :",
+    Placeholder = "ใส่ ID",
+    Callback = function(text)
+        jobInput = text
+    end
+})
+
+-- ปุ่ม Join JobId
+ServerTab:Button({
+    Title = "🎮Join JobId",
+    Callback = function()
+        if jobInput ~= "" then
+            TeleportService:TeleportToPlaceInstance(placeId, jobInput, LocalPlayer)
+        else
+            warn("ใส่ JobId ให้ถูกต้อง")
+        end
+    end
+})
+
+-- ฟังก์ชันดึงรายชื่อเซิร์ฟเวอร์
+local function GetServers(cursor)
+    local url = ("https://games.roblox.com/v1/games/%d/servers/Public?sortOrder=Desc&limit=100%s"):format(
+        PlaceIdForHop,
+        cursor and ("&cursor=" .. cursor) or ""
+    )
+
+    local success, result = pcall(function()
+        return HttpService:JSONDecode(game:HttpGet(url))
+    end)
+
+    return success and result or nil
+end
+
+-- ปุ่ม Server Hop
+ServerTab:Button({
+    Title = "Server Hop",
+    Callback = function()
+        task.spawn(function()
+            print("🔍 เริ่มค้นหาเซิร์ฟคน ≤ " .. TargetPlayers .. "...")
+
+            while true do
+                local cursor = nil
+                local found = false
+
+                repeat
+                    local data = GetServers(cursor)
+                    if not data then break end
+
+                    for _, server in ipairs(data.data) do
+                        local playing = server.playing or 0
+                        if playing <= TargetPlayers and playing < server.maxPlayers then
+                            print("📌 เจอเซิร์ฟ:", server.id, " | คน:", playing)
+                            TeleportService:TeleportToPlaceInstance(PlaceIdForHop, server.id, LocalPlayer)
+                            found = true
+                            break
+                        end
+                    end
+
+                    cursor = data.nextPageCursor
+                until cursor == nil or found
+
+                task.wait(0.2)
+            end
+        end)
+    end
+})
+
+-- ฟังก์ชัน Rejoin
+local function Rejoin()
+    local jobId = game.JobId
+    local success, err = pcall(function()
+        TeleportService:TeleportToPlaceInstance(placeId, jobId, LocalPlayer)
+    end)
+
+    if not success then
+        warn("Rejoin แบบ instance เดิมล้มเหลว:", err)
+        TeleportService:Teleport(placeId, LocalPlayer)
+    end
+end
+
+-- ปุ่ม Rejoin
+ServerTab:Button({
+    Title = "Rejoin",
+    Callback = function()
+        Rejoin()
+    end
+})
