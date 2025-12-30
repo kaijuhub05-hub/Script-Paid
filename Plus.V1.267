@@ -13,9 +13,9 @@ local Players, RunService, Camera, LocalPlayer, ReplicatedStorage =
     game:GetService("ReplicatedStorage")
 
 local Window = WindUI:CreateWindow({
-    Title = "☃️ Kaiju Hub | Pvp",
+    Title = "☃️ Kaiju Hub | Pvp BlockSpin",
     Icon = "layout-list", 
-    Author = "❄️ My Kaiju |  BlockSpin | I love You :D !",
+    Author = "❄️ https://discord.gg/rdRYZmbkM4 | I love You :D !",
     Folder = "MyKaijuHub",
     Size = UDim2.fromOffset(400, 350),
     Transparent = true,
@@ -2603,14 +2603,6 @@ ServerTab:Button({
         Rejoin()
     end
 })
-
-SettingsTab:Code({
-    Title = "My discord Kaiju Hub",
-    Code = [[https://discord.gg/rdRYZmbkM4]]
-})
-
-SettingsTab:Divider()
-SettingsTab:Section({Title="Settings Config :"})
 
 local ConfigManager = Window.ConfigManager  
 local Loaded = false  
