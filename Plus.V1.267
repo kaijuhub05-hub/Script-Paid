@@ -2116,20 +2116,80 @@ local ITEM_COLORS = {
     ["Glock"] = Color3.fromRGB(0, 170, 255),    
     ["Sawnoff"] = Color3.fromRGB(0, 170, 255),  
     ["P226"] = Color3.fromRGB(0, 170, 255),     
+    ["Axe"] = Color3.fromRGB(0, 170, 255),     
+    ["Brainrot Slap"] = Color3.fromRGB(0, 170, 255),     
+    ["Butcher Knife"] = Color3.fromRGB(0, 170, 255),     
+    ["Crowbar"] = Color3.fromRGB(0, 170, 255),     
+    ["Diamond Mop"] = Color3.fromRGB(0, 170, 255),     
+    ["Frying Pan"] = Color3.fromRGB(0, 170, 255),     
+    ["Metal Baseball Bat"] = Color3.fromRGB(0, 170, 255),     
+    ["Switchblade"] = Color3.fromRGB(0, 170, 255),     
+    ["Wrench"] = Color3.fromRGB(0, 170, 255),     
+    ["FishingRodUltimate"] = Color3.fromRGB(0, 170, 255),     
+    ["FishingRodAdvanced"] = Color3.fromRGB(0, 170, 255),     
+    ["Cinder Block"] = Color3.fromRGB(0, 170, 255),     
+    ["Jerry Can"] = Color3.fromRGB(0, 170, 255),     
+    ["Coelacanth"] = Color3.fromRGB(0, 170, 255),     
+    ["CornSeeds"] = Color3.fromRGB(0, 170, 255),     
+    ["RegularFertilizer"] = Color3.fromRGB(0, 170, 255),     
+    ["RegularPot"] = Color3.fromRGB(0, 170, 255),     
+    ["RegularSoil"] = Color3.fromRGB(0, 170, 255),     
+    ["Bull Energy"] = Color3.fromRGB(0, 170, 255),     
+    ["Emergency Care Kit"] = Color3.fromRGB(0, 170, 255),     
+    ["Pre Workout"] = Color3.fromRGB(0, 170, 255),     
 
     ["C9"] = Color3.fromRGB(0, 255, 0),         -- เขียว
     ["G3"] = Color3.fromRGB(0, 255, 0),         
+    ["Baseball Bat"] = Color3.fromRGB(0, 255, 0),         
+    ["Gold Mop"] = Color3.fromRGB(0, 255, 0),         
+    ["Hammer"] = Color3.fromRGB(0, 255, 0),         
+    ["Nailed Wooden Board"] = Color3.fromRGB(0, 255, 0),         
+    ["Rusty Shovel"] = Color3.fromRGB(0, 255, 0),         
+    ["Tire lron"] = Color3.fromRGB(0, 255, 0),         
+    ["FishingRodPro"] = Color3.fromRGB(0, 255, 0),         
+    ["Brick"] = Color3.fromRGB(0, 255, 0),         
+    ["Dumbbell Plate"] = Color3.fromRGB(0, 255, 0),         
+    ["Fire Cracker"] = Color3.fromRGB(0, 255, 0),         
+    ["Dolphinfish"] = Color3.fromRGB(0, 255, 0),         
+    ["Northern Pike"] = Color3.fromRGB(0, 255, 0),         
+    ["SunflowerSeeds"] = Color3.fromRGB(0, 255, 0),         
 
     ["M24"] = Color3.fromRGB(180, 0, 255),      -- ม่วง
     ["Double Draco"] = Color3.fromRGB(180, 0, 255),  
+    ["Barbed Baseball Bat"] = Color3.fromRGB(180, 0, 255),  
+    ["Combat Axe"] = Color3.fromRGB(180, 0, 255),  
+    ["Machette"] = Color3.fromRGB(180, 0, 255),  
+    ["Shovel"] = Color3.fromRGB(180, 0, 255),  
+    ["Sledge Hammer"] = Color3.fromRGB(180, 0, 255),  
+    ["Grenade"] = Color3.fromRGB(180, 0, 255),  
+    ["Molotov"] = Color3.fromRGB(180, 0, 255),  
+    ["Tuna"] = Color3.fromRGB(180, 0, 255),  
+    ["OrganicFertilizer"] = Color3.fromRGB(180, 0, 255),  
+    ["PremiumSoil"] = Color3.fromRGB(180, 0, 255),  
+    ["TomatoSeeds"] = Color3.fromRGB(180, 0, 255),  
+    ["Energy Shot"] = Color3.fromRGB(180, 0, 255),  
+    ["First Aid Kit"] = Color3.fromRGB(180, 0, 255),  
+    ["Firework Launcher"] = Color3.fromRGB(180, 0, 255),  
 
     ["Remington"] = Color3.fromRGB(255, 215, 0), -- ทอง
     ["AK47"] = Color3.fromRGB(255, 215, 0),     
     ["MP5"] = Color3.fromRGB(255, 215, 0),     
     ["RPG"] = Color3.fromRGB(255, 215, 0)      
+    ["Crossbow"] = Color3.fromRGB(255, 215, 0)      
+    ["M16"] = Color3.fromRGB(255, 215, 0)      
+    ["Tactical Axe"] = Color3.fromRGB(255, 215, 0)      
+    ["Tactical Knife"] = Color3.fromRGB(255, 215, 0)      
+    ["Tactical Shovel"] = Color3.fromRGB(255, 215, 0)      
+    ["Marlin"] = Color3.fromRGB(255, 215, 0)      
+    ["Sailfish"] = Color3.fromRGB(255, 215, 0)      
+    ["DiamondPot"] = Color3.fromRGB(255, 215, 0)      
+    ["GoldenPot"] = Color3.fromRGB(255, 215, 0)      
+    ["GoldenTomatoSeeds"] = Color3.fromRGB(255, 215, 0)      
+
+    ["Anaconde"] = Color3.fromRGB(255, 0, 0)      
 }
 
-local DEFAULT_HIGHLIGHT_COLOR = Color3.fromRGB(200, 0, 255)  -- สีม่วงสำหรับไม่ตรงรายการ
+local DEFAULT_HIGHLIGHT_COLOR = Color3.fromRGB(255, 255, 255)  -- สีม่วงสำหรับไม่ตรงรายการ
 local DEFAULT_TEXT_COLOR = Color3.fromRGB(255, 255, 255)  
 
 -- โฟลเดอร์ของตก
