@@ -695,3 +695,810 @@ WeaponTab:Toggle({
         end
     end
 })
+
+local SpeedEnabled = false
+local speedMultiplier = 0.10
+local JumpEnabled = false
+local HideNameEnabled = false
+local AntiLookEnabled = false
+local AntiRagdollEnabled = false
+
+local ReplicatedStorage = game:GetService("ReplicatedStorage")
+local RunService = game:GetService("RunService")
+local Data_upvr = require(ReplicatedStorage.Modules.Core.Data)
+
+local bankButton = CheaterTab:Button({
+    Title = "🏦 Bank Balance :",
+    Desc = "<font color=\"rgb(0,255,255)\">$0</font>", -- สีฟ้าสดใส
+    Locked = false,
+    Callback = function()
+        -- ไม่ต้องทำอะไรเมื่อกด
+    end
+})
+
+-- สร้างปุ่มสำหรับดูเงินในมือ
+local handButton = CheaterTab:Button({
+    Title = "💵 Hand Balance :",
+    Desc = "<font color=\"rgb(0,255,0)\">$0</font>", -- สีเขียวสดใส
+    Locked = false,
+    Callback = function()
+        -- ไม่ต้องทำอะไรเมื่อกด
+    end
+})
+
+-- ฟังก์ชันดึงจำนวนเงิน ATM
+local function GetBankMoney()
+    if Data_upvr.money and type(Data_upvr.money.bank) == "number" then
+        return Data_upvr.money.bank
+    else
+        return 0
+    end
+end
+
+-- ฟังก์ชันดึงจำนวนเงินในมือ
+local function GetHandMoney()
+    if Data_upvr.money and type(Data_upvr.money.hand) == "number" then
+        return Data_upvr.money.hand
+    else
+        return 0
+    end
+end
+
+-- อัปเดต Desc ทุกเฟรม
+RunService.RenderStepped:Connect(function()
+    if bankButton and bankButton.SetDesc then
+        local bankMoney = GetBankMoney()
+        bankButton:SetDesc(("<font color=\"rgb(0,255,255)\">$%s</font>"):format(tostring(bankMoney)))
+    end
+    if handButton and handButton.SetDesc then
+        local handMoney = GetHandMoney()
+        handButton:SetDesc(("<font color=\"rgb(0,255,0)\">$%s</font>"):format(tostring(handMoney)))
+    end
+end)
+
+CheaterTab:Divider()
+CheaterTab:Section({Title="speed & jump :"})
+
+CheaterTab:Slider({
+    Title = "Speed Multiplier :",
+    Value = {Min = 0.00, Max = 0.15, Default = speedMultiplier},
+    Step = 0.05,
+    Callback = function(value)
+        speedMultiplier = value
+    end
+})
+
+CheaterTab:Toggle({
+    Title = "Speed",
+    Flag = "SpeedEnabled",
+    Value = SpeedEnabled,
+    Callback = function(state)
+        SpeedEnabled = state
+    end
+})
+
+RunService.RenderStepped:Connect(function(delta)
+    if SpeedEnabled and LocalPlayer.Character then
+        local char = LocalPlayer.Character
+        local hum = char:FindFirstChildOfClass("Humanoid")
+        local root = char:FindFirstChild("HumanoidRootPart")
+        if hum and root then
+            local moveDir = hum.MoveDirection
+            if moveDir.Magnitude > 0 then
+                root.CFrame = root.CFrame + moveDir.Unit * speedMultiplier * delta * 60
+            end
+        end
+    end
+end)
+
+local JumpEnabled = false
+local JumpValue = 20
+
+local function ApplyJump(value)
+    JumpValue = value or JumpValue
+    local hum = LocalPlayer.Character and LocalPlayer.Character:FindFirstChildOfClass("Humanoid")
+    if hum then
+        hum.JumpPower = JumpValue
+        hum.JumpHeight = JumpValue / 2
+    end
+end
+
+local function RemoveJump()
+    local hum = LocalPlayer.Character and LocalPlayer.Character:FindFirstChildOfClass("Humanoid")
+    if hum then
+        hum.JumpPower = 50
+        hum.JumpHeight = 7.2
+    end
+end
+
+CheaterTab:Slider({
+    Title = "Jump Height",
+    Step = 1,
+    Value = {Min = 10, Max = 200, Default = 20}, 
+    Callback = function(value)
+        JumpValue = value
+        if JumpEnabled then
+            ApplyJump(JumpValue)
+        end
+    end
+})
+
+CheaterTab:Toggle({
+    Title = "Jump",
+    Flag = "JumpEnabled",
+    Value = JumpEnabled,
+    Callback = function(state)
+        JumpEnabled = state
+        if not state then
+            RemoveJump()
+        end
+    end
+})
+
+-- อัปเดตทุกเฟรม
+RunService.RenderStepped:Connect(function()
+    if JumpEnabled then
+        ApplyJump(JumpValue)
+    end
+end)
+
+LocalPlayer.CharacterAdded:Connect(function(char)
+    task.wait(1)
+    if JumpEnabled then
+        ApplyJump(JumpValue)
+    end
+end)
+
+CheaterTab:Divider()
+CheaterTab:Section({Title="invisible :"})
+
+CheaterTab:Button({
+    Title = "invisible",
+    Desc = "Press the invisibility button and reset yourself to use it immediately. If it disappears, do it again.🛡️",
+    Callback = function()
+        WindUI:Notify({
+            Title = "invisible ✅",
+            Content = "Invisibility is now working.🛡️🛡️",
+            Icon = "shield",
+        })
+        task.spawn(function()
+            setfflag("NextGenReplicatorEnabledWrite4", "false")
+            wait(5)
+            setfflag("NextGenReplicatorEnabledWrite4", "true")
+        end)
+    end
+})
+
+CheaterTab:Section({Title="Cheater :"})
+
+CheaterTab:Button({
+    Title = "Skip Spin",
+    Callback = function()
+        if _G.autoCratesEnabled then
+            WindUI:Notify({Title="Skip Spin", Content="Already Enabled"})
+            return
+        end
+        _G.autoCratesEnabled = true
+        WindUI:Notify({Title="Skip Spin", Content="Auto Skip Spin Enabled"})
+
+        local Players = game:GetService("Players")
+        local player = Players.LocalPlayer
+
+        local CrateModule = require(ReplicatedStorage.Modules.Game.CrateSystem.Crate)
+        local Data_upvr = require(ReplicatedStorage.Modules.Core.Data)
+        local crateUIRemote = ReplicatedStorage:FindFirstChild("Remotes") and ReplicatedStorage.Remotes:FindFirstChild("ShowCrateUI")
+
+        if CrateModule.spin then
+            CrateModule.spin = function(crateClass, reward, crateInstance)
+                if crateClass.FinishSpin then
+                    crateClass:FinishSpin(crateInstance, reward)
+                else
+                    crateInstance:SetAttribute("reward", reward)
+                end
+            end
+        end
+
+        local function AutoOpenCrate(crateInstance)
+            if not crateInstance then return end
+
+            local method = "money"
+            local price = crateInstance:GetAttribute("price")
+            local crateName = crateInstance.Parent.Name
+
+            if Data_upvr.money.hand < price and Data_upvr.crate_tokens[crateName] and Data_upvr.crate_tokens[crateName] > 0 then
+                method = "token"
+            end
+
+            local reward, err = Net_upvr.get("open_crate", crateInstance, method)
+            if reward then
+                if CrateModule.FinishSpin then
+                    CrateModule.FinishSpin(crateInstance, reward)
+                else
+                    crateInstance:SetAttribute("reward", reward)
+                end
+
+                if crateUIRemote then
+                    pcall(function()
+                        crateUIRemote:InvokeServer(crateName)
+                    end)
+                end
+
+                if crateInstance:FindFirstChild("Buy") and crateInstance.Buy:IsA("RemoteFunction") then
+                    pcall(function()
+                        crateInstance.Buy:InvokeServer()
+                    end)
+                end
+            end
+        end
+
+        spawn(function()
+            while _G.autoCratesEnabled do
+                local InventoryFolder = player:WaitForChild("Inventory")
+                for _, crate in ipairs(InventoryFolder:GetChildren()) do
+                    if crate:GetAttribute("opened") ~= true then
+                        AutoOpenCrate(crate)
+                        task.wait(0.1) 
+                    end
+                end
+                task.wait(0.3)
+            end
+        end)
+    end
+})
+
+local Players = game:GetService("Players")
+local player = Players.LocalPlayer
+
+local ANIM_ID = "rbxassetid://104767795538635"
+local currentAnimTrack
+
+local function PlayAntiLook()
+    local char = LocalPlayer.Character or LocalPlayer.CharacterAdded:Wait()
+    local humanoid = char:WaitForChild("Humanoid")
+    local anim = Instance.new("Animation")
+    anim.AnimationId = ANIM_ID
+    currentAnimTrack = humanoid:LoadAnimation(anim)
+    currentAnimTrack.Looped = true
+    currentAnimTrack:Play()
+end
+
+local function StopAntiLook()
+    if currentAnimTrack then
+        currentAnimTrack:Stop()
+        currentAnimTrack = nil
+    end
+end
+
+CheaterTab:Toggle({
+    Title = "Anti Lock",
+    Flag = "AntiLookEnabled",
+    Value = AntiLookEnabled,
+    Callback = function(state)
+        AntiLookEnabled = state
+        if state then 
+            PlayAntiLook() 
+        else 
+            StopAntiLook() 
+        end
+    end
+})
+  
+local player = Players.LocalPlayer  
+local char = player.Character or player.CharacterAdded:Wait()  
+local rootPart = char:WaitForChild("HumanoidRootPart")  
+  
+local PickupEnabled = false  
+local CounterTable  
+  
+local function FindCounterTable()  
+    for _, Obj in ipairs(getgc(true)) do  
+        if typeof(Obj) == "table" and rawget(Obj, "event") and rawget(Obj, "func") then  
+            return Obj  
+        end  
+    end  
+    return nil  
+end  
+  
+local function NetGet(...)  
+    if not CounterTable or not CounterTable.func then return end  
+    local args = {...}  
+    CounterTable.func = (CounterTable.func or 0) + 1  
+    local success, result = pcall(function()  
+        local GetRemote = ReplicatedStorage:WaitForChild("Remotes"):WaitForChild("Get")  
+        return GetRemote:InvokeServer(CounterTable.func, unpack(args))  
+    end)  
+    if not success then warn("[NetGet Error]", result) end  
+    return result  
+end  
+  
+local function CheckAndPickup()  
+    if not PickupEnabled then return end  
+    if not rootPart or not rootPart.Parent then return end  
+  
+    local droppedFolder = workspace:FindFirstChild("DroppedItems") or workspace:FindFirstChild("DroppedItem")  
+    if not droppedFolder then return end  
+  
+    for _, item in ipairs(droppedFolder:GetChildren()) do  
+        if item:IsA("Model") or item:IsA("BasePart") then
+            local success, modelCF = pcall(function()  
+                if item:IsA("Model") then
+                    return (item.GetPivot and item:GetPivot() or item:GetModelCFrame())
+                else
+                    return item.CFrame
+                end
+            end)
+            if not success or not modelCF then continue end
+            local distance = (rootPart.Position - modelCF.Position).Magnitude
+            if distance <= 15 then
+                pcall(function()
+                    NetGet("pickup_dropped_item", item)
+                end)
+            end
+        end
+    end
+end  
+  
+local function UpdateChar(newChar)  
+    char = newChar  
+    rootPart = char:WaitForChild("HumanoidRootPart")  
+end  
+  
+player.CharacterAdded:Connect(UpdateChar)  
+if char then  
+    UpdateChar(char)  
+end  
+  
+-- อัปเดต CounterTable และ rootPart ทุก 30 วินาที  
+task.spawn(function()  
+    while true do  
+        if PickupEnabled then  
+            CounterTable = FindCounterTable()  
+            if player.Character then  
+                rootPart = player.Character:FindFirstChild("HumanoidRootPart")  
+            end  
+        end  
+        task.wait(30)  
+    end  
+end)  
+  
+-- Loop ทุกเฟรม  
+RunService.Heartbeat:Connect(CheckAndPickup)  
+  
+local PickupToggle = CheaterTab:Toggle({
+    Title = "Pickup Items",
+    Flag = "PickupEnabled",
+    Value = PickupEnabled,
+    Callback = function(state)
+        PickupEnabled = state
+        print("🧲 Auto Pickup Items:", state and "ON" or "OFF")
+    end
+})
+
+-- Infinite Stamina Toggle
+local AutoSprintEnabled = false
+
+CheaterTab:Toggle({
+    Title = "Infinite Stamina",
+    Default = false,
+    Callback = function(state)
+        AutoSprintEnabled = state
+
+        -- โหลด Sprint Module
+        local SprintModule
+        local ok = pcall(function()
+            SprintModule = require(ReplicatedStorage.Modules.Game.Sprint)
+        end)
+        if not ok or not SprintModule then
+            warn("❌ Sprint Module not found!")
+            return
+        end
+
+        local consume_stamina = SprintModule.consume_stamina
+        if not consume_stamina then
+            warn("❌ consume_stamina not found in Sprint Module")
+            return
+        end
+
+        -- ดึง SprintBar
+        local SprintBar
+        pcall(function()
+            local ups = debug.getupvalues(consume_stamina)
+            SprintBar = ups[2] and ups[2].sprint_bar
+        end)
+
+        if not SprintBar or not SprintBar.update then
+            warn("❌ SprintBar not found or missing update function")
+            return
+        end
+
+        if state then
+            -- เก็บฟังก์ชันเดิม
+            getgenv().OriginalSprintUpdate = SprintBar.update
+
+            -- Lock Stamina Full
+            SprintBar.update = function()
+                return 1
+            end
+
+            -- Auto Sprint Loop
+            getgenv().AutoSprintLoop = task.spawn(function()
+                while AutoSprintEnabled do
+                    pcall(function()
+                        if Net then
+                            Net.send("set_sprinting_1", true)
+                            task.wait(0.4)
+                            Net.send("set_sprinting_1", false)
+                        end
+                    end)
+                    task.wait(0.15)
+                end
+                -- ปิด Sprint
+                pcall(function()
+                    if Net then
+                        Net.send("set_sprinting_1", false)
+                    end
+                end)
+            end)
+
+            WindUI:Notify({
+                Title = "INF STAMINA",
+                Description = "เปิดใช้งานแล้ว",
+                Duration = 3
+            })
+        else
+            -- ปิด Auto Sprint Loop
+            if getgenv().AutoSprintLoop then
+                task.cancel(getgenv().AutoSprintLoop)
+                getgenv().AutoSprintLoop = nil
+            end
+
+            -- Reset Sprint state
+            pcall(function()
+                if Net then
+                    Net.send("set_sprinting_1", false)
+                end
+            end)
+
+            -- Restore original update function
+            if getgenv().OriginalSprintUpdate then
+                pcall(function()
+                    local ups = debug.getupvalues(consume_stamina)
+                    local SprintBar = ups[2] and ups[2].sprint_bar
+                    if SprintBar then
+                        SprintBar.update = getgenv().OriginalSprintUpdate
+                    end
+                end)
+            end
+            getgenv().OriginalSprintUpdate = nil
+
+            WindUI:Notify({
+                Title = "INF STAMINA",
+                Description = "ปิดแล้ว",
+                Duration = 3
+            })
+        end
+    end
+})
+
+-- Bypass Kick Function (ใส่ล่างสุด)
+pcall(function()
+    local kickF
+    -- หา function kick ของผู้เล่น
+    for _, func in ipairs(getconnections(LocalPlayer.OnKick)) do
+        if func.Function then
+            kickF = func.Function
+            break
+        end
+    end
+
+    if kickF then
+        hookfunction(kickF, function(p12, p13, p14, p15, ...)
+            -- return call ปกติเพื่อ bypass
+            return p12(p13, p14, p15, ...)
+        end)
+        print("✅ Kick function bypass applied!")
+    else
+        warn("❌ Kick function not found!")
+    end
+end)
+
+CheaterTab:Divider()
+CheaterTab:Section({Title="att :"})
+
+CheaterTab:Toggle({
+    Title = "Hide Name",
+    Flag = "HideNameEnabled",
+    Value = HideNameEnabled,
+    Callback = function(state)
+        HideNameEnabled = state
+        if state then
+            RemoveBillboardGui()
+        end
+    end
+})
+-- อัปเดต BillboardGui ทุกเฟรม (Realtime)
+RunService.RenderStepped:Connect(function()
+    if HideNameEnabled and LocalPlayer.Character then
+        for _, gui in pairs(LocalPlayer.Character:GetDescendants()) do
+            if gui:IsA("BillboardGui") then
+                gui:Destroy()
+            end
+        end
+    end
+end)
+
+-- ตรวจจับตอน Spawn ใหม่
+LocalPlayer.CharacterAdded:Connect(function(char)
+    if HideNameEnabled then
+        -- ตรวจสอบทุกตัวลูกที่ถูกสร้างใน Character ใหม่
+        char.DescendantAdded:Connect(function(desc)
+            if desc:IsA("BillboardGui") then
+                desc:Destroy()
+            end
+        end)
+        
+        -- ลบที่มีอยู่แล้วใน Character
+        RemoveBillboardGui()
+    end
+end)
+
+local UndergroundEnabled = false
+local UndergroundAutoEnabled = true -- toggle เปิด/ปิด
+local UndergroundDepth = 50       -- ความลึก
+local SpinSpeed = 2080            -- ความเร็วหมุนรอบตัว
+local UndergroundAngle = 0        -- มุมหมุน
+
+-- ฟังก์ชันเริ่มมุด
+local function StartUnderground()
+    local char = LocalPlayer.Character
+    if not char then return end
+    local hrp = char:FindFirstChild("HumanoidRootPart")
+    if not hrp then return end
+
+    UndergroundEnabled = true
+    local initialY = hrp.Position.Y - UndergroundDepth
+
+    local conn
+    conn = RunService.RenderStepped:Connect(function(delta)
+        if not UndergroundEnabled or not hrp.Parent then
+            if conn then conn:Disconnect() conn = nil end
+            return
+        end
+
+        UndergroundAngle = (UndergroundAngle + SpinSpeed * delta) % 360
+        local rad = math.rad(UndergroundAngle)
+
+        local offsetX = math.cos(rad) * 6 -- รัศมีวงหมุน 6
+        local offsetZ = math.sin(rad) * 6
+        local newPos = Vector3.new(hrp.Position.X + offsetX, initialY, hrp.Position.Z + offsetZ)
+
+        -- หมุนหันไปจุดเดิมกลางตัว
+        hrp.CFrame = CFrame.new(newPos, Vector3.new(hrp.Position.X, initialY, hrp.Position.Z))
+    end)
+end
+
+-- ฟังก์ชันหยุดมุด
+local function StopUnderground()
+    UndergroundEnabled = false
+end
+
+-- ฟังก์ชันตรวจ Anti Ragdoll (ไม่ล้ม)
+local function AntiRagdoll()
+    local char = LocalPlayer.Character
+    if not char then return end
+    local humanoid = char:FindFirstChildOfClass("Humanoid")
+    local hrp = char:FindFirstChild("HumanoidRootPart")
+    if not humanoid or not hrp then return end
+    if humanoid.PlatformStand then
+        humanoid.PlatformStand = false
+        humanoid.Sit = false
+        hrp.Velocity = Vector3.new(0,0,0)
+        hrp.RotVelocity = Vector3.new(0,0,0)
+    end
+end
+
+-- อัปเดตทุกเฟรม
+RunService.RenderStepped:Connect(function()
+    local char = LocalPlayer.Character
+    if not char then return end
+    local humanoid = char:FindFirstChild("Humanoid")
+    if not humanoid then return end
+
+    -- Underground Auto
+    if UndergroundAutoEnabled then
+        if humanoid.Health < 16 and humanoid.Health > 0 then
+            if not UndergroundEnabled then StartUnderground() end
+        elseif humanoid.Health >= 30 or humanoid.Health <= 0 then
+            if UndergroundEnabled then StopUnderground() end
+        end
+    end
+
+    -- Anti Ragdoll
+    AntiRagdoll()
+end)
+
+CheaterTab:Toggle({
+    Title = "Anti Kill",
+    Flag = "UndergroundAutoEnabled",
+    Value = UndergroundAutoEnabled,
+    Callback = function(state)
+        UndergroundAutoEnabled = state
+        if not state then UndergroundEnabled = false end
+    end
+})
+
+Players.LocalPlayer.CharacterAdded:Connect(function(char)
+    if UndergroundAutoEnabled then
+        UndergroundEnabled = false
+    end
+end)
+
+local Players = game:GetService("Players")
+local ReplicatedStorage = game:GetService("ReplicatedStorage")
+local RunService = game:GetService("RunService")
+local player = Players.LocalPlayer
+
+local CounterTable
+
+-- หา CounterTable
+local function findCounter()
+    for _, obj in ipairs(getgc(true)) do
+        if typeof(obj) == "table" and rawget(obj, "event") and rawget(obj, "func") then
+            return obj
+        end
+    end
+    return nil
+end
+
+-- ฟังก์ชันเริ่ม Anti Ragdoll
+local function startAntiRagdoll()
+    CounterTable = findCounter()
+    if not CounterTable then
+        warn("❌ ไม่พบ CounterTable!")
+        return
+    end
+
+    spawn(function()
+        while AntiRagdollEnabled do
+            CounterTable.event = (CounterTable.event or 0) + 1
+            local SendRemote = ReplicatedStorage.Remotes:WaitForChild("Send")
+            pcall(function()
+                SendRemote:FireServer(CounterTable.event, "end_ragdoll_early")
+            end)
+            wait(0.3)
+
+            if AntiRagdollEnabled then
+                CounterTable.event = (CounterTable.event or 0) + 1
+                pcall(function()
+                    SendRemote:FireServer(CounterTable.event, "clear_ragdoll")
+                end)
+            end
+            wait(0.3)
+        end
+    end)
+end
+
+CheaterTab:Toggle({
+    Title = "Anti Ragdoll",
+    Flag = "AntiRagdollEnabled",
+    Value = AntiRagdollEnabled,
+    Callback = function(state)
+        AntiRagdollEnabled = state
+        if state then
+            startAntiRagdoll()
+            print("✅ Anti Ragdoll ON")
+        else
+            print("❌ Anti Ragdoll OFF")
+        end
+    end
+})
+-- Auto start เมื่อ respawn
+player.CharacterAdded:Connect(function()
+    if AntiRagdollEnabled then
+        wait(1)
+        startAntiRagdoll()
+    end
+end)
+
+CheaterTab:Divider()
+CheaterTab:Section({Title="Snap PC key [ Z ]"})
+
+local JumpEnabled = false
+local SnapHeightOffset = -7
+local SnapDirection = "Down"
+local SnapDuration = 0.1
+local SnapBlockDuration = 5
+
+local isRunning = false
+
+local function SnapQuick()
+    if isRunning then return end
+    isRunning = true
+
+    local char = LocalPlayer.Character or LocalPlayer.CharacterAdded:Wait()
+    local hrp = char:FindFirstChild("HumanoidRootPart")
+    local hum = char:FindFirstChildOfClass("Humanoid")
+    if not hrp or not hum then isRunning=false return end
+
+    local blocks = {}
+    for _, part in ipairs(char:GetChildren()) do
+        if part:IsA("BasePart") then
+            local blk = Instance.new("Part")
+            blk.Size = part.Size
+            blk.CFrame = part.CFrame
+            blk.Anchored = true
+            blk.CanCollide = false
+            blk.Material = Enum.Material.Neon
+            blk.Transparency = 0.5
+            blk.Color = Color3.fromRGB(0,170,255) -- สีฟ้า
+            blk.Parent = workspace
+            table.insert(blocks, blk)
+        end
+    end
+
+    -- ตั้งเวลาให้ลบบล็อกหลัง 5 วินาที
+    task.spawn(function()
+        task.wait(SnapBlockDuration)
+        for _, blk in ipairs(blocks) do
+            if blk and blk.Parent then blk:Destroy() end
+        end
+    end)
+
+    hum.Sit = true
+    local origY = hrp.Position.Y
+    local offset = math.abs(SnapHeightOffset)
+    if SnapDirection == "Down" then offset = -offset end
+
+    local conn
+    conn = RunService.RenderStepped:Connect(function()
+        if hrp and hrp.Parent then
+            hrp.CFrame = hrp.CFrame:Lerp(CFrame.new(hrp.Position.X, origY+offset, hrp.Position.Z),0.8)
+
+            for i, part in ipairs(char:GetChildren()) do
+                if part:IsA("BasePart") and blocks[i] then
+                    local blk = blocks[i]
+                    if blk and blk.Parent then
+                        blk.CFrame = part.CFrame
+                    end
+                end
+            end
+        end
+    end)
+
+    task.wait(SnapDuration)
+    if conn then conn:Disconnect() conn=nil end
+    hum.Sit = false
+    isRunning=false
+end
+
+CheaterTab:Button({
+    Title="Snap Click",
+    Locked=false,
+    Callback=function() SnapQuick() end
+})
+
+CheaterTab:Slider({
+    Title = "Snap Depth",
+    Flag = "SnapHeightOffset",
+    Step = 1,
+    Value = {Min = 1, Max = 50, Default = math.abs(SnapHeightOffset)},
+    Callback = function(val)
+        SnapHeightOffset = (SnapDirection=="Down" and -1 or 1)*val
+    end
+})
+
+-- Dropdown Snap Direction
+CheaterTab:Dropdown({
+    Title="Snap Direction",
+    Values={"Down","Up"},
+    Value=SnapDirection,
+    Callback=function(opt)
+        SnapDirection=opt
+        SnapHeightOffset=(opt=="Down" and -1 or 1)*math.abs(SnapHeightOffset)
+    end
+})
+
+UserInputService.InputBegan:Connect(function(input,gpe)
+    if gpe then return end
+    if input.KeyCode==Enum.KeyCode.Z then SnapQuick() end
+end)
