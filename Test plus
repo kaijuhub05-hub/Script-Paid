@@ -1,1 +1,240 @@
+local Players = game:GetService("Players")      
+local RunService = game:GetService("RunService")      
+local Workspace = game:GetService("Workspace")      
+      
+local player = Players.LocalPlayer      
+local camera = Workspace.CurrentCamera      
+      
+local ItemESP_Enabled = false  -- ตัวแปรเปิดปิด ESP      
+local ESP_Items = {}  -- เก็บ Highlight + Drawing ของแต่ละไอเทม      
 
+-- กำหนดสีตามชื่อไอเทม
+local ITEM_COLORS = {
+    ["Uzi"] = Color3.fromRGB(0, 170, 255),       -- ฟ้า
+    ["Hunting"] = Color3.fromRGB(0, 170, 255),   
+    ["Glock"] = Color3.fromRGB(0, 170, 255),    
+    ["Sawnoff"] = Color3.fromRGB(0, 170, 255),  
+    ["P226"] = Color3.fromRGB(0, 170, 255),     
+    ["Axe"] = Color3.fromRGB(0, 170, 255),     
+    ["Brainrot Slap"] = Color3.fromRGB(0, 170, 255),     
+    ["Butcher Knife"] = Color3.fromRGB(0, 170, 255),     
+    ["Crowbar"] = Color3.fromRGB(0, 170, 255),     
+    ["Diamond Mop"] = Color3.fromRGB(0, 170, 255),     
+    ["Frying Pan"] = Color3.fromRGB(0, 170, 255),     
+    ["Metal Baseball Bat"] = Color3.fromRGB(0, 170, 255),     
+    ["Switchblade"] = Color3.fromRGB(0, 170, 255),     
+    ["Wrench"] = Color3.fromRGB(0, 170, 255),     
+    ["FishingRodUltimate"] = Color3.fromRGB(0, 170, 255),     
+    ["FishingRodAdvanced"] = Color3.fromRGB(0, 170, 255),     
+    ["Cinder Block"] = Color3.fromRGB(0, 170, 255),     
+    ["Jerry Can"] = Color3.fromRGB(0, 170, 255),     
+    ["Coelacanth"] = Color3.fromRGB(0, 170, 255),     
+    ["CornSeeds"] = Color3.fromRGB(0, 170, 255),     
+    ["RegularFertilizer"] = Color3.fromRGB(0, 170, 255),     
+    ["RegularPot"] = Color3.fromRGB(0, 170, 255),     
+    ["RegularSoil"] = Color3.fromRGB(0, 170, 255),     
+    ["Bull Energy"] = Color3.fromRGB(0, 170, 255),     
+    ["Emergency Care Kit"] = Color3.fromRGB(0, 170, 255),     
+    ["Pre Workout"] = Color3.fromRGB(0, 170, 255),     
+
+    ["C9"] = Color3.fromRGB(0, 255, 0),         -- เขียว
+    ["G3"] = Color3.fromRGB(0, 255, 0),         
+    ["Baseball Bat"] = Color3.fromRGB(0, 255, 0),         
+    ["Gold Mop"] = Color3.fromRGB(0, 255, 0),         
+    ["Hammer"] = Color3.fromRGB(0, 255, 0),         
+    ["Nailed Wooden Board"] = Color3.fromRGB(0, 255, 0),         
+    ["Rusty Shovel"] = Color3.fromRGB(0, 255, 0),         
+    ["Tire lron"] = Color3.fromRGB(0, 255, 0),         
+    ["FishingRodPro"] = Color3.fromRGB(0, 255, 0),         
+    ["Brick"] = Color3.fromRGB(0, 255, 0),         
+    ["Dumbbell Plate"] = Color3.fromRGB(0, 255, 0),         
+    ["Fire Cracker"] = Color3.fromRGB(0, 255, 0),         
+    ["Dolphinfish"] = Color3.fromRGB(0, 255, 0),         
+    ["Northern Pike"] = Color3.fromRGB(0, 255, 0),         
+    ["SunflowerSeeds"] = Color3.fromRGB(0, 255, 0),         
+
+    ["M24"] = Color3.fromRGB(180, 0, 255),      -- ม่วง
+    ["Double Draco"] = Color3.fromRGB(180, 0, 255),  
+    ["Barbed Baseball Bat"] = Color3.fromRGB(180, 0, 255),  
+    ["Combat Axe"] = Color3.fromRGB(180, 0, 255),  
+    ["Machette"] = Color3.fromRGB(180, 0, 255),  
+    ["Shovel"] = Color3.fromRGB(180, 0, 255),  
+    ["Sledge Hammer"] = Color3.fromRGB(180, 0, 255),  
+    ["Grenade"] = Color3.fromRGB(180, 0, 255),  
+    ["Molotov"] = Color3.fromRGB(180, 0, 255),  
+    ["Tuna"] = Color3.fromRGB(180, 0, 255),  
+    ["OrganicFertilizer"] = Color3.fromRGB(180, 0, 255),  
+    ["PremiumSoil"] = Color3.fromRGB(180, 0, 255),  
+    ["TomatoSeeds"] = Color3.fromRGB(180, 0, 255),  
+    ["Energy Shot"] = Color3.fromRGB(180, 0, 255),  
+    ["First Aid Kit"] = Color3.fromRGB(180, 0, 255),  
+    ["Firework Launcher"] = Color3.fromRGB(180, 0, 255),  
+
+    ["Remington"] = Color3.fromRGB(255, 215, 0), -- ทอง
+    ["AK47"] = Color3.fromRGB(255, 215, 0),     
+    ["MP5"] = Color3.fromRGB(255, 215, 0),     
+    ["RPG"] = Color3.fromRGB(255, 215, 0)      
+    ["Crossbow"] = Color3.fromRGB(255, 215, 0)      
+    ["M16"] = Color3.fromRGB(255, 215, 0)      
+    ["Tactical Axe"] = Color3.fromRGB(255, 215, 0)      
+    ["Tactical Knife"] = Color3.fromRGB(255, 215, 0)      
+    ["Tactical Shovel"] = Color3.fromRGB(255, 215, 0)      
+    ["Marlin"] = Color3.fromRGB(255, 215, 0)      
+    ["Sailfish"] = Color3.fromRGB(255, 215, 0)      
+    ["DiamondPot"] = Color3.fromRGB(255, 215, 0)      
+    ["GoldenPot"] = Color3.fromRGB(255, 215, 0)      
+    ["GoldenTomatoSeeds"] = Color3.fromRGB(255, 215, 0)      
+}
+
+local DEFAULT_HIGHLIGHT_COLOR = Color3.fromRGB(255, 255, 255)  -- สีม่วงสำหรับไม่ตรงรายการ
+local DEFAULT_TEXT_COLOR = Color3.fromRGB(255, 255, 255)  
+
+-- โฟลเดอร์ของตก
+local droppedFolder = Workspace:FindFirstChild("DroppedItem") or Workspace:FindFirstChild("DroppedItems")      
+if not droppedFolder then      
+    warn("ไม่พบโฟลเดอร์ DroppedItem / DroppedItems")      
+    return      
+end      
+
+-- ฟังก์ชันเลือกสีตามชื่อ
+local function getItemColor(itemName)
+    for key, color in pairs(ITEM_COLORS) do
+        if string.find(itemName, key) then
+            return color
+        end
+    end
+    return DEFAULT_HIGHLIGHT_COLOR
+end
+
+-- ฟังก์ชันสร้าง ESP ให้ไอเทม 1 ชิ้น      
+local function createItemESP(item)      
+    if not ItemESP_Enabled then return end      
+    if ESP_Items[item] then return end      
+    if item.Name == "Money" then return end      
+    if not item:FindFirstChild("Handle") and not item.PrimaryPart then return end      
+
+    local handle = item:FindFirstChild("Handle") or item.PrimaryPart      
+    local color = getItemColor(item.Name)
+      
+    -- Highlight      
+    local highlight = Instance.new("Highlight")      
+    highlight.FillColor = color      
+    highlight.OutlineColor = color      
+    highlight.FillTransparency = 0.3      
+    highlight.OutlineTransparency = 0      
+    highlight.DepthMode = Enum.HighlightDepthMode.AlwaysOnTop      
+    highlight.Parent = item      
+      
+    -- ชื่อไอเทม      
+    local nameText = Drawing.new("Text")      
+    nameText.Size = 7      
+    nameText.Color = color      
+    nameText.Center = true      
+    nameText.Outline = true      
+    nameText.Font = 2      
+    nameText.Visible = true      
+    nameText.Text = item.Name      
+      
+    -- ระยะทาง      
+    local distanceText = Drawing.new("Text")      
+    distanceText.Size = 7      
+    distanceText.Color = DEFAULT_TEXT_COLOR      
+    distanceText.Center = true      
+    distanceText.Outline = true      
+    distanceText.Font = 2      
+    distanceText.Visible = true      
+      
+    ESP_Items[item] = {highlight = highlight, name = nameText, distance = distanceText, handle = handle, color=color}      
+      
+    -- ลบเมื่อไอเทมหาย      
+    item.AncestryChanged:Connect(function()      
+        if not item.Parent then      
+            if ESP_Items[item] then      
+                highlight:Destroy()      
+                nameText:Remove()      
+                distanceText:Remove()      
+                ESP_Items[item] = nil      
+            end      
+        end      
+    end)      
+end      
+
+-- เปิด ESP
+local function enableItemESP()      
+    ItemESP_Enabled = true      
+    for _, item in pairs(droppedFolder:GetChildren()) do      
+        if item:IsA("Model") or item:IsA("Tool") or item:IsA("Folder") then      
+            task.spawn(function()      
+                task.wait(0.3)      
+                createItemESP(item)      
+            end)      
+        end      
+    end      
+end      
+
+-- ปิด ESP
+local function disableItemESP()      
+    ItemESP_Enabled = false      
+    for item, data in pairs(ESP_Items) do      
+        if data.highlight then data.highlight:Destroy() end      
+        if data.name then data.name:Remove() end      
+        if data.distance then data.distance:Remove() end      
+    end      
+    ESP_Items = {}      
+end      
+
+-- อัปเดตตำแหน่งชื่อ + ระยะทางทุกเฟรม      
+RunService.Heartbeat:Connect(function()      
+    if not ItemESP_Enabled then return end      
+    if not player.Character or not player.Character:FindFirstChild("HumanoidRootPart") then return end      
+    local rootPos = player.Character.HumanoidRootPart.Position      
+      
+    for item, data in pairs(ESP_Items) do      
+        if item and item.Parent and data.handle and data.handle.Parent then      
+            local worldPos = data.handle.Position + Vector3.new(0, 2, 0)      
+            local screenPos, onScreen = camera:WorldToViewportPoint(worldPos)      
+      
+            if onScreen then      
+                local screen2D = Vector2.new(screenPos.X, screenPos.Y)      
+                local distance = math.floor((rootPos - data.handle.Position).Magnitude)      
+      
+                data.name.Position = screen2D      
+                data.name.Color = data.color  -- อัพเดตสีตามชื่อ      
+                data.name.Visible = true      
+      
+                data.distance.Position = screen2D + Vector2.new(0, 18)      
+                data.distance.Text = distance .. "m"      
+                data.distance.Color = DEFAULT_TEXT_COLOR      
+                data.distance.Visible = true      
+            else      
+                data.name.Visible = false      
+                data.distance.Visible = false      
+            end      
+        else      
+            -- ลบถ้าไอเทมหาย      
+            if data.highlight then data.highlight:Destroy() end      
+            if data.name then data.name:Remove() end      
+            if data.distance then data.distance:Remove() end      
+            ESP_Items[item] = nil      
+        end      
+    end      
+end)      
+
+-- เมื่อมีของตกใหม่      
+droppedFolder.ChildAdded:Connect(function(item)      
+    task.wait(0.5)      
+    createItemESP(item)      
+end)      
+
+-- WindUI Toggle      
+EspTab:Toggle({      
+    Title = "Dropped Items",      
+    Value = ItemESP_Enabled,      
+    Callback = function(state)      
+        if state then      
+            enableItemESP()      
+        else      
+            disableItemESP()      
+        end      
+    end      
+})
