@@ -2112,7 +2112,7 @@ local ESP_Items = {}  -- เก็บ Highlight + Drawing ของแต่ล�
 -- กำหนดสีตามชื่อไอเทม
 local ITEM_COLORS = {
     ["Uzi"] = Color3.fromRGB(0, 170, 255),       -- ฟ้า
-    ["Hunting"] = Color3.fromRGB(0, 170, 255),   
+    ["Hunting Rifle"] = Color3.fromRGB(0, 170, 255),   
     ["Glock"] = Color3.fromRGB(0, 170, 255),    
     ["Sawnoff"] = Color3.fromRGB(0, 170, 255),  
     ["P226"] = Color3.fromRGB(0, 170, 255),     
@@ -2155,7 +2155,8 @@ local ITEM_COLORS = {
     ["SunflowerSeeds"] = Color3.fromRGB(0, 255, 0),         
 
     ["M24"] = Color3.fromRGB(180, 0, 255),      -- ม่วง
-    ["Double Draco"] = Color3.fromRGB(180, 0, 255),  
+    ["Double Barrel"] = Color3.fromRGB(180, 0, 255),  
+    ["Draco"] = Color3.fromRGB(180, 0, 255),  
     ["Barbed Baseball Bat"] = Color3.fromRGB(180, 0, 255),  
     ["Combat Axe"] = Color3.fromRGB(180, 0, 255),  
     ["Machette"] = Color3.fromRGB(180, 0, 255),  
@@ -2184,7 +2185,9 @@ local ITEM_COLORS = {
     ["Sailfish"] = Color3.fromRGB(255, 215, 0),      
     ["DiamondPot"] = Color3.fromRGB(255, 215, 0),      
     ["GoldenPot"] = Color3.fromRGB(255, 215, 0),      
-    ["GoldenTomatoSeeds"] = Color3.fromRGB(255, 215, 0)      
+    ["GoldenTomatoSeeds"] = Color3.fromRGB(255, 215, 0),      
+
+    ["Anaconda"] = Color3.fromRGB(255, 0, 0)      
 }
 
 local DEFAULT_HIGHLIGHT_COLOR = Color3.fromRGB(255, 255, 255)  -- สีม่วงสำหรับไม่ตรงรายการ
