@@ -2606,7 +2606,7 @@ ServerTab:Button({
 
 local ConfigManager = Window.ConfigManager  
 local Loaded = false  
-local AutoSaveName = "MyAutoConfigKaijuHub"  
+local AutoSaveName = "MyAutoConfig"  
 _G.LastConfigName = _G.LastConfigName or AutoSaveName  
 
 local function SendNotify(title, content, icon)  
