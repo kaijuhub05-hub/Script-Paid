@@ -2603,3 +2603,95 @@ ServerTab:Button({
         Rejoin()
     end
 })
+
+local ConfigManager = Window.ConfigManager
+local Loaded = false
+local AutoSaveName = "MyAutoConfig"
+local LastConfigName = AutoSaveName 
+
+local function SendNotify(title, content, icon)
+    if WindUI and WindUI.Notify then
+        pcall(function()
+            WindUI:Notify({
+                Title = title or "Notification",
+                Content = content or "",
+                Duration = 2,
+                Icon = icon or "zap"
+            })
+        end)
+    end
+end
+
+-- ฟังก์ชัน Save Config
+local function SaveConfig(name)
+    local success, err = pcall(function()
+        local cfg = ConfigManager:CreateConfig(name)
+        cfg:Save()
+    end)
+    if success then
+        LastConfigName = name
+        SendNotify("Config Manager", "Config Successfully Saved", "save")
+    else
+        SendNotify("Config Manager", "Save Failed: " .. tostring(err), "alert")
+    end
+end
+
+-- ฟังก์ชัน Delete Config
+local function DeleteConfig(name)
+    local success, err = pcall(function()
+        local cfg = ConfigManager:CreateConfig(name)
+        cfg:Delete()
+    end)
+    if success then
+        SendNotify("Config Manager", "Config Successfully Deleted", "trash")
+    else
+        SendNotify("Config Manager", "Delete Failed: " .. tostring(err), "alert")
+    end
+end
+
+-- ปุ่มบันทึก Config
+SettingsTab:Button({
+    Title = "Save Config",
+    Icon = "save",
+    Callback = function()
+        SaveConfig(AutoSaveName)
+    end
+})
+
+-- ปุ่มลบ Config
+SettingsTab:Button({
+    Title = "Delete Config",
+    Icon = "trash",
+    Callback = function()
+        DeleteConfig(AutoSaveName)
+    end
+})
+
+-- โหลดอัตโนมัติเมื่อ UI พร้อม
+task.spawn(function()
+    -- รอจน WindUI และ ConfigManager พร้อม
+    while not ConfigManager or not WindUI or not WindUI.Notify do
+        task.wait(0.5)
+    end
+
+    if Loaded then return end
+    Loaded = true
+
+    SendNotify("Config Manager", "AutoSave Config Initialized...", "clock")
+    task.wait(1)
+
+    -- พยายามโหลด Config หากมี
+    local success, err = pcall(function()
+        local cfg = ConfigManager:CreateConfig(AutoSaveName)
+        if cfg then
+            cfg:Load()
+            LastConfigName = AutoSaveName
+        end
+    end)
+
+    if success then
+        SendNotify("Config Manager", "Config Successfully Loaded", "check")
+    else
+        SendNotify("Config Manager", "AutoLoad Failed: " .. tostring(err), "alert")
+    end
+end)
