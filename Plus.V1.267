@@ -867,14 +867,6 @@ end)
 CheaterTab:Divider()
 CheaterTab:Section({Title="invisible :"})
 
-if not game or not game:GetService then return end
-local Players = game:GetService("Players")
-if not Players then return end
-local LocalPlayer = Players.LocalPlayer
-if not LocalPlayer then return end
-local ReplicatedStorage = game:GetService("ReplicatedStorage")
-if not ReplicatedStorage then return end
-
 local Net
 local success, result = pcall(function()
     return require(ReplicatedStorage.Modules.Core.Net)
