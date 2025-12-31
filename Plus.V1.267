@@ -867,19 +867,36 @@ end)
 CheaterTab:Divider()
 CheaterTab:Section({Title="invisible :"})
 
+local Players = game:GetService("Players")
+local LocalPlayer = Players.LocalPlayer
+local ReplicatedStorage = game:GetService("ReplicatedStorage")
+local Net = require(ReplicatedStorage.Modules.Core.Net)
+
+local kickF
+kickF = hookfunction(LocalPlayer.Kick, function(p12, p13, p14, p15, ...)
+    return p12(p13, p14, p15, ...)
+end)
+
 CheaterTab:Button({
-    Title = "invisible",
+    Title = "Invisible",
     Desc = "Press the invisibility button and reset yourself to use it immediately. If it disappears, do it again.🛡️",
     Callback = function()
         WindUI:Notify({
-            Title = "invisible ✅",
-            Content = "Invisibility is now working.🛡️🛡️",
+            Title = "Invisible ✅",
+            Content = "Invisibility is now working. Respawn triggered 🛡️",
             Icon = "shield",
         })
+
+        -- เปิด invisibility
         task.spawn(function()
             setfflag("NextGenReplicatorEnabledWrite4", "false")
             wait(5)
             setfflag("NextGenReplicatorEnabledWrite4", "true")
+        end)
+
+        -- สั่งให้รีสปawnทันที
+        task.spawn(function()
+            Net.send("request_respawn")
         end)
     end
 })
