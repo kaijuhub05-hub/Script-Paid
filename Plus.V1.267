@@ -2619,12 +2619,6 @@ local AUTO_LOCK_CONN
 local LOCK_ICON_ID = "rbxassetid://6249640130"
 local UNLOCK_ICON_ID = "rbxassetid://14061898347"
 
--- Kick bypass (แบบเดิม)
-local kickF
-kickF = hookfunction(LocalPlayer.Kick, function(p12, p13, p14, p15, ...)
-    return p12(p13, p14, p15, ...)
-end)
-
 local function updateIcon(isLocked)
     local btn = UI.get("LockVehicleImageLabel")
     if btn then
