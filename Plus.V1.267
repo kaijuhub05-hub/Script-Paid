@@ -867,26 +867,24 @@ end)
 CheaterTab:Divider()
 CheaterTab:Section({Title="invisible :"})
 
-local Net
-local success, result = pcall(function()
-    return require(ReplicatedStorage.Modules.Core.Net)
-end)
-if success then
-    Net = result
-else
-    return
+local Players = game:GetService("Players")
+local LocalPlayer = Players.LocalPlayer
+local ReplicatedStorage = game:GetService("ReplicatedStorage")
+local Net = require(ReplicatedStorage.Modules.Core.Net)
+
+-- Kick bypass แบบปลอดภัย
+do
+    local oldKick = LocalPlayer.Kick
+    pcall(function()
+        hookfunction(LocalPlayer.Kick, function(self, ...)
+            return oldKick(self, ...)
+        end)
+    end)
 end
-
-local kickF
-kickF = hookfunction(LocalPlayer.Kick, function(p12, p13, p14, p15, ...)
-    return p12(p13, p14, p15, ...)
-end)
-
-if not WindUI or not CheaterTab then return end
 
 CheaterTab:Button({
     Title = "Invisible & Respawn",
-    Desc = "Press to go invisible and instantly respawn with bypass 🛡️",
+    Desc = "Press to go invisible and instantly respawn 🛡️",
     Callback = function()
         WindUI:Notify({
             Title = "Invisible ✅",
@@ -894,14 +892,18 @@ CheaterTab:Button({
             Icon = "shield",
         })
 
+        -- เปิด invisibility
         task.spawn(function()
             setfflag("NextGenReplicatorEnabledWrite4", "false")
-            task.wait(5)
+            wait(5)
             setfflag("NextGenReplicatorEnabledWrite4", "true")
         end)
 
+        -- สั่งให้รีสปawnทันที
         task.spawn(function()
-            Net.send("request_respawn")
+            pcall(function()
+                Net.send("request_respawn")
+            end)
         end)
     end
 })
