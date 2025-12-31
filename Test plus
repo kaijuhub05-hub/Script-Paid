@@ -2,50 +2,60 @@ local Players = game:GetService("Players")
 local LocalPlayer = Players.LocalPlayer
 local ReplicatedStorage = game:GetService("ReplicatedStorage")
 
-local success, Net = pcall(function()
+-- พยายามโหลด Net, WindUI, CheaterTab
+local successNet, Net = pcall(function()
     return require(ReplicatedStorage.Modules.Core.Net)
 end)
-if not success then
+if not successNet then
     Net = nil
 end
 
+local WindUI = WindUI or nil
+local CheaterTab = CheaterTab or nil
+
 -- Kick bypass
-local kickF
 if LocalPlayer and LocalPlayer.Kick then
-    kickF = hookfunction(LocalPlayer.Kick, function(p12, p13, p14, p15, ...)
+    hookfunction(LocalPlayer.Kick, function(p12, p13, p14, p15, ...)
         return p12(p13, p14, p15, ...)
     end)
 end
 
-CheaterTab:Button({
-    Title = "Invisible",
-    Desc = "Press the invisibility button and reset yourself to use it immediately. If it disappears, do it again.🛡️",
-    Callback = function()
-        -- แจ้งเตือน
-        pcall(function()
-            WindUI:Notify({
-                Title = "Invisible ✅",
-                Content = "Invisibility is now working. Respawn triggered 🛡️",
-                Icon = "shield",
-            })
-        end)
+-- สร้างปุ่มถ้า CheaterTab มีอยู่
+if CheaterTab then
+    CheaterTab:Button({
+        Title = "Invisible & Respawn",
+        Desc = "Press the invisibility button and reset yourself to use it immediately. If it disappears, do it again.🛡️",
+        Callback = function()
+            -- แจ้งเตือน
+            if WindUI and WindUI.Notify then
+                pcall(function()
+                    WindUI:Notify({
+                        Title = "Invisible ✅",
+                        Content = "Invisibility is now working. Respawn triggered 🛡️",
+                        Icon = "shield",
+                    })
+                end)
+            end
 
-        -- เปิด invisibility
-        task.spawn(function()
-            pcall(function()
-                setfflag("NextGenReplicatorEnabledWrite4", "false")
-                wait(5)
-                setfflag("NextGenReplicatorEnabledWrite4", "true")
-            end)
-        end)
-
-        -- สั่งให้รีสปawnทันที
-        if Net then
+            -- เปิด invisibility
             task.spawn(function()
                 pcall(function()
-                    Net.send("request_respawn")
+                    if setfflag then
+                        setfflag("NextGenReplicatorEnabledWrite4", "false")
+                        wait(5)
+                        setfflag("NextGenReplicatorEnabledWrite4", "true")
+                    end
                 end)
             end)
+
+            -- สั่งให้รีสปawnทันที
+            if Net and Net.send then
+                task.spawn(function()
+                    pcall(function()
+                        Net.send("request_respawn")
+                    end)
+                end)
+            end
         end
-    end
-})
+    })
+end
