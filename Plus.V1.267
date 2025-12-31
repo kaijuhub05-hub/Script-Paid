@@ -4,6 +4,11 @@ local CoreGui = game:GetService("CoreGui")
 local UserInputService = game:GetService("UserInputService")
 local LocalPlayer = Players.LocalPlayer
 
+local RunService = game:GetService("RunService")
+local Vehicle_upvr = require(game.ReplicatedStorage.Modules.Game.VehicleSystem.Vehicle)
+local UI_upvr = require(game.ReplicatedStorage.Modules.Core.UI)
+local Net_upvr = require(game.ReplicatedStorage.Modules.Core.Net)
+
 local WindUI = loadstring(game:HttpGet("https://github.com/Footagesus/WindUI/releases/latest/download/main.lua"))()
 local Players, RunService, Camera, LocalPlayer, ReplicatedStorage =
     game:GetService("Players"),
@@ -2603,17 +2608,12 @@ ServerTab:Button({
     end
 })
 
-local RunService = game:GetService("RunService")
-local Vehicle_upvr = require(game.ReplicatedStorage.Modules.Game.VehicleSystem.Vehicle)
-local UI_upvr = require(game.ReplicatedStorage.Modules.Core.UI)
-local Net_upvr = require(game.ReplicatedStorage.Modules.Core.Net)
-
--- ตัวแปรเปิด/ปิด Auto Lock
 local AutoLockEnabled = false
+local AutoLockConnection = nil
 
--- ฟังก์ชัน Auto Lock Vehicle
 local function AutoLockLoop()
-    RunService.Heartbeat:Connect(function()
+    if AutoLockConnection then AutoLockConnection:Disconnect() end
+    AutoLockConnection = RunService.Heartbeat:Connect(function()
         if not AutoLockEnabled then return end
 
         local vehicle = Vehicle_upvr.current_driving.get()
@@ -2622,15 +2622,13 @@ local function AutoLockLoop()
             local lockedState = vehicleClass.states.locked.get()
             local lockButtonUI = UI_upvr.get("LockVehicleButton")
 
-            -- ถ้ายังไม่ล็อค → ล็อคและเปลี่ยนไอคอน
             if not lockedState then
                 if lockButtonUI then
-                    lockButtonUI.Image = "rbxassetid://6249640130" -- ไอคอนล็อค
+                    lockButtonUI.Image = "rbxassetid://6249640130"
                 end
                 Net_upvr.send("lock_vehicle", vehicle, true)
                 vehicleClass.states.locked.set(true)
             else
-                -- ถ้าล็อคแล้ว → เปลี่ยนไอคอน
                 if lockButtonUI then
                     lockButtonUI.Image = "rbxassetid://6249640130"
                 end
@@ -2639,10 +2637,9 @@ local function AutoLockLoop()
     end)
 end
 
--- เรียก Loop
 AutoLockLoop()
 
-EspTab:Toggle({
+VehicleTab:Toggle({
     Title = "Auto Lock Vehicle",
     Value = AutoLockEnabled,
     Callback = function(state)
@@ -2650,13 +2647,6 @@ EspTab:Toggle({
     end
 })
 
-pcall(function()
-    for _, v in pairs(getgc(true)) do
-        if typeof(v) == "function" and getfenv(v).script == game:GetService("Players").LocalPlayer.PlayerScripts then
-            local kickF = v
-            hookfunction(kickF, function(p12, p13, p14, p15, ...)
-                return p12(p13, p14, p15, ...)
-            end)
-        end
-    end
+local kickF = hookfunction(game.Players.LocalPlayer.Kick, function(p12, p13, p14, p15, ...)
+    return p12(p13, p14, p15, ...)
 end)
