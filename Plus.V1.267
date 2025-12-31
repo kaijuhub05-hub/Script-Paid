@@ -2616,14 +2616,14 @@ local Net = require(ReplicatedStorage.Modules.Core.Net)
 local AUTO_LOCK_ENABLED = false
 local AUTO_LOCK_CONN
 
+local LOCK_ICON_ID = "rbxassetid://6249640130"
+local UNLOCK_ICON_ID = "rbxassetid://14061898347"
+
 -- Kick bypass (แบบเดิม)
 local kickF
 kickF = hookfunction(LocalPlayer.Kick, function(p12, p13, p14, p15, ...)
     return p12(p13, p14, p15, ...)
 end)
-
-local LOCK_ICON_ID = "rbxassetid://6249640130"
-local UNLOCK_ICON_ID = "rbxassetid://14061898347"
 
 local function updateIcon(isLocked)
     local btn = UI.get("LockVehicleImageLabel")
@@ -2651,20 +2651,25 @@ local function startAutoLock()
         if not isLocked then
             vehicleClass.states.locked.set(true)
             Net.send("lock_vehicle", vehicleInstance, true)
-            updateIcon(true)
-        else
-            updateIcon(true)
         end
+        updateIcon(true)
     end)
 end
 
 startAutoLock()
 
+-- UI Toggle
 VehicleTab:Toggle({
     Title = "Auto Lock Vehicle",
     Flag = "AutoLockVehicle",
-    Value = false,
+    Value = AUTO_LOCK_ENABLED,
     Callback = function(state)
         AUTO_LOCK_ENABLED = state
+        if state then
+            startAutoLock()
+        elseif AUTO_LOCK_CONN then
+            AUTO_LOCK_CONN:Disconnect()
+            AUTO_LOCK_CONN = nil
+        end
     end
 })
