@@ -1,7 +1,5 @@
--- Flag สำหรับเปิด/ปิด Auto Lock
 getgenv().AutoLockEnabled = false
 
--- ฟังก์ชัน Auto Lock
 local function ToggleAutoLock(state)
     getgenv().AutoLockEnabled = state
     if state then
@@ -9,7 +7,7 @@ local function ToggleAutoLock(state)
             while getgenv().AutoLockEnabled do
                 local vehicle = Vehicle_upvr.current_driving.get()
                 if vehicle then
-                    -- ตรวจสอบสถานะล็อครถ
+
                     local isLocked = module_upvr.enabled.get() or false
                     if not isLocked then
                         -- สั่งล็อครถ
@@ -18,13 +16,12 @@ local function ToggleAutoLock(state)
                         print("🚗 Auto Locked Vehicle")
                     end
                 end
-                task.wait(1) -- ตรวจสอบทุก 1 วินาที
+                task.wait(1) 
             end
         end)
     end
 end
 
--- เพิ่ม Toggle ใน UI
 VehicleTab:Toggle({
     Title = "Auto Lock Vehicle",
     Value = false,
