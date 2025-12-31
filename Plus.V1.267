@@ -4,7 +4,21 @@ local CoreGui = game:GetService("CoreGui")
 local UserInputService = game:GetService("UserInputService")
 local LocalPlayer = Players.LocalPlayer
 
-local WindUI = loadstring(game:HttpGet("https://github.com/Footagesus/WindUI/releases/latest/download/main.lua"))()
+local Version = "1.6.53"
+local WindUI
+
+local success, result = pcall(function()
+    return loadstring(game:HttpGet("https://github.com/Footagesus/WindUI/releases/download/" .. Version .. "/main.lua"))()
+end)
+
+if success and result then
+    WindUI = result
+    print("✅ WindUI โหลดสำเร็จ")
+else
+    warn("❌ ไม่สามารถโหลด WindUI ได้: " .. tostring(result))
+    WindUI = nil
+end
+
 local Players, RunService, Camera, LocalPlayer, ReplicatedStorage =
     game:GetService("Players"),
     game:GetService("RunService"),
