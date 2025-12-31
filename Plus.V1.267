@@ -4,11 +4,6 @@ local CoreGui = game:GetService("CoreGui")
 local UserInputService = game:GetService("UserInputService")
 local LocalPlayer = Players.LocalPlayer
 
-local RunService = game:GetService("RunService")
-local Vehicle_upvr = require(game.ReplicatedStorage.Modules.Game.VehicleSystem.Vehicle)
-local UI_upvr = require(game.ReplicatedStorage.Modules.Core.UI)
-local Net_upvr = require(game.ReplicatedStorage.Modules.Core.Net)
-
 local WindUI = loadstring(game:HttpGet("https://github.com/Footagesus/WindUI/releases/latest/download/main.lua"))()
 local Players, RunService, Camera, LocalPlayer, ReplicatedStorage =
     game:GetService("Players"),
@@ -2608,57 +2603,68 @@ ServerTab:Button({
     end
 })
 
-local RunService = game:GetService("RunService")
 local Players = game:GetService("Players")
-local Vehicle_upvr = require(game.ReplicatedStorage.Modules.Game.VehicleSystem.Vehicle)
-local UI_upvr = require(game.ReplicatedStorage.Modules.Core.UI)
-local Net_upvr = require(game.ReplicatedStorage.Modules.Core.Net)
+local RunService = game:GetService("RunService")
+local ReplicatedStorage = game:GetService("ReplicatedStorage")
 
-local AutoLockEnabled = false
-local AutoLockConnection = nil
 local LocalPlayer = Players.LocalPlayer
 
-local function AutoLockLoop()
-    if AutoLockConnection then AutoLockConnection:Disconnect() end
-    AutoLockConnection = RunService.Heartbeat:Connect(function()
-        if not AutoLockEnabled then return end
+local Vehicle = require(ReplicatedStorage.Modules.Game.VehicleSystem.Vehicle)
+local UI = require(ReplicatedStorage.Modules.Core.UI)
+local Net = require(ReplicatedStorage.Modules.Core.Net)
 
-        local vehicle = Vehicle_upvr.current_driving.get()
-        if vehicle then
-            local vehicleClass = Vehicle_upvr.class.get(vehicle)
-            if not vehicleClass or not vehicleClass.states or not vehicleClass.states.locked then return end
+local AUTO_LOCK_ENABLED = false
+local AUTO_LOCK_CONN
 
-            local lockedState = vehicleClass.states.locked.get()
-            local lockButtonUI = UI_upvr.get("LockVehicleButton")
-            
-            local ownerId = vehicle:GetAttribute("OwnerUserId")
-            if ownerId ~= LocalPlayer.UserId then return end
+-- Kick bypass (แบบเดิม)
+local kickF
+kickF = hookfunction(LocalPlayer.Kick, function(p12, p13, p14, p15, ...)
+    return p12(p13, p14, p15, ...)
+end)
 
-            if not lockedState then
-                if lockButtonUI then
-                    lockButtonUI.Image = "rbxassetid://6249640130"
-                end
-                Net_upvr.send("lock_vehicle", vehicle, true)
-                vehicleClass.states.locked.set(true)
-            else
-                if lockButtonUI then
-                    lockButtonUI.Image = "rbxassetid://6249640130"
-                end
-            end
+local LOCK_ICON_ID = "rbxassetid://6249640130"
+local UNLOCK_ICON_ID = "rbxassetid://14061898347"
+
+local function updateIcon(isLocked)
+    local btn = UI.get("LockVehicleImageLabel")
+    if btn then
+        btn.Image = isLocked and LOCK_ICON_ID or UNLOCK_ICON_ID
+    end
+end
+
+local function startAutoLock()
+    if AUTO_LOCK_CONN then AUTO_LOCK_CONN:Disconnect() end
+    AUTO_LOCK_CONN = RunService.Heartbeat:Connect(function()
+        if not AUTO_LOCK_ENABLED then return end
+
+        local vehicleInstance = Vehicle.current_driving.get()
+        if not vehicleInstance then return end
+
+        local ownerId = vehicleInstance:GetAttribute("OwnerUserId")
+        if ownerId ~= LocalPlayer.UserId then return end
+
+        local vehicleClass = Vehicle.class.get(vehicleInstance)
+        if not vehicleClass or not vehicleClass.states or not vehicleClass.states.locked then return end
+
+        local isLocked = vehicleClass.states.locked.get()
+
+        if not isLocked then
+            vehicleClass.states.locked.set(true)
+            Net.send("lock_vehicle", vehicleInstance, true)
+            updateIcon(true)
+        else
+            updateIcon(true)
         end
     end)
 end
 
-AutoLockLoop()
+startAutoLock()
 
 VehicleTab:Toggle({
     Title = "Auto Lock Vehicle",
-    Value = AutoLockEnabled,
+    Flag = "AutoLockVehicle",
+    Value = false,
     Callback = function(state)
-        AutoLockEnabled = state
+        AUTO_LOCK_ENABLED = state
     end
 })
-
-hookfunction(Players.LocalPlayer.Kick, function(p12, p13, p14, p15, ...)
-    return p12(p13, p14, p15, ...)
-end)
