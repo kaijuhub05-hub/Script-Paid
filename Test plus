@@ -1,65 +1,14 @@
-local Players = game:GetService("Players")
-local RunService = game:GetService("RunService")
-local ReplicatedStorage = game:GetService("ReplicatedStorage")
+local Version = "1.6.53"
+local WindUI
 
-local LocalPlayer = Players.LocalPlayer
-
-local Vehicle = require(ReplicatedStorage.Modules.Game.VehicleSystem.Vehicle)
-local UI = require(ReplicatedStorage.Modules.Core.UI)
-local Net = require(ReplicatedStorage.Modules.Core.Net)
-
-local AUTO_LOCK_ENABLED = false
-local AUTO_LOCK_CONN
-
--- Kick bypass (แบบเดิม)
-local kickF
-kickF = hookfunction(LocalPlayer.Kick, function(p12, p13, p14, p15, ...)
-    return p12(p13, p14, p15, ...)
+local success, result = pcall(function()
+    return loadstring(game:HttpGet("https://github.com/Footagesus/WindUI/releases/download/" .. Version .. "/main.lua"))()
 end)
 
-local LOCK_ICON_ID = "rbxassetid://6249640130"
-local UNLOCK_ICON_ID = "rbxassetid://14061898347"
-
-local function updateIcon(isLocked)
-    local btn = UI.get("LockVehicleImageLabel")
-    if btn then
-        btn.Image = isLocked and LOCK_ICON_ID or UNLOCK_ICON_ID
-    end
+if success and result then
+    WindUI = result
+    print("✅ WindUI โหลดสำเร็จ")
+else
+    warn("❌ ไม่สามารถโหลด WindUI ได้: " .. tostring(result))
+    WindUI = nil
 end
-
-local function startAutoLock()
-    if AUTO_LOCK_CONN then AUTO_LOCK_CONN:Disconnect() end
-    AUTO_LOCK_CONN = RunService.Heartbeat:Connect(function()
-        if not AUTO_LOCK_ENABLED then return end
-
-        local vehicleInstance = Vehicle.current_driving.get()
-        if not vehicleInstance then return end
-
-        local ownerId = vehicleInstance:GetAttribute("OwnerUserId")
-        if ownerId ~= LocalPlayer.UserId then return end
-
-        local vehicleClass = Vehicle.class.get(vehicleInstance)
-        if not vehicleClass or not vehicleClass.states or not vehicleClass.states.locked then return end
-
-        local isLocked = vehicleClass.states.locked.get()
-
-        if not isLocked then
-            vehicleClass.states.locked.set(true)
-            Net.send("lock_vehicle", vehicleInstance, true)
-            updateIcon(true)
-        else
-            updateIcon(true)
-        end
-    end)
-end
-
-startAutoLock()
-
-VehicleTab:Toggle({
-    Title = "Auto Lock Vehicle",
-    Flag = "AutoLockVehicle",
-    Value = false,
-    Callback = function(state)
-        AUTO_LOCK_ENABLED = state
-    end
-})
