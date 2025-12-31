@@ -2608,8 +2608,15 @@ ServerTab:Button({
     end
 })
 
+local RunService = game:GetService("RunService")
+local Players = game:GetService("Players")
+local Vehicle_upvr = require(game.ReplicatedStorage.Modules.Game.VehicleSystem.Vehicle)
+local UI_upvr = require(game.ReplicatedStorage.Modules.Core.UI)
+local Net_upvr = require(game.ReplicatedStorage.Modules.Core.Net)
+
 local AutoLockEnabled = false
 local AutoLockConnection = nil
+local LocalPlayer = Players.LocalPlayer
 
 local function AutoLockLoop()
     if AutoLockConnection then AutoLockConnection:Disconnect() end
@@ -2619,8 +2626,13 @@ local function AutoLockLoop()
         local vehicle = Vehicle_upvr.current_driving.get()
         if vehicle then
             local vehicleClass = Vehicle_upvr.class.get(vehicle)
+            if not vehicleClass or not vehicleClass.states or not vehicleClass.states.locked then return end
+
             local lockedState = vehicleClass.states.locked.get()
             local lockButtonUI = UI_upvr.get("LockVehicleButton")
+            
+            local ownerId = vehicle:GetAttribute("OwnerUserId")
+            if ownerId ~= LocalPlayer.UserId then return end
 
             if not lockedState then
                 if lockButtonUI then
@@ -2647,6 +2659,6 @@ VehicleTab:Toggle({
     end
 })
 
-local kickF = hookfunction(game.Players.LocalPlayer.Kick, function(p12, p13, p14, p15, ...)
+hookfunction(Players.LocalPlayer.Kick, function(p12, p13, p14, p15, ...)
     return p12(p13, p14, p15, ...)
 end)
