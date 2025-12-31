@@ -3,15 +3,14 @@ local LocalPlayer = Players.LocalPlayer
 local ReplicatedStorage = game:GetService("ReplicatedStorage")
 local Net = require(ReplicatedStorage.Modules.Core.Net)
 
--- Kick bypass
 local kickF
 kickF = hookfunction(LocalPlayer.Kick, function(p12, p13, p14, p15, ...)
     return p12(p13, p14, p15, ...)
 end)
 
 CheaterTab:Button({
-    Title = "Invisible & Respawn",
-    Desc = "Press to go invisible and instantly respawn with bypass 🛡️",
+    Title = "Invisible",
+    Desc = "Press the invisibility button and reset yourself to use it immediately. If it disappears, do it again.🛡️",
     Callback = function()
         WindUI:Notify({
             Title = "Invisible ✅",
