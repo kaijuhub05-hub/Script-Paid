@@ -2603,54 +2603,65 @@ ServerTab:Button({
     end
 })
 
-local AutoLockEnabled = false
+local RunService = game:GetService("RunService")
+local Vehicle_upvr = require(game.ReplicatedStorage.Modules.Game.VehicleSystem.Vehicle)
+local UI_upvr = require(game.ReplicatedStorage.Modules.Core.UI)
+local Net_upvr = require(game.ReplicatedStorage.Modules.Core.Net)
 
-local LOCK_ICON = "rbxassetid://6249640130"     
-local UNLOCK_ICON = "rbxassetid://14061898347"  
+getgenv().AutoLockEnabled = getgenv().AutoLockEnabled or false
+local autoLockConnection = autoLockConnection or nil
 
--- ฟังก์ชันตรวจสอบและล็อครถอัตโนมัติ
 local function AutoLockVehicle()
-    if not AutoLockEnabled then return end
+    if autoLockConnection then return end -- ป้องกันสร้างซ้ำ
+    autoLockConnection = RunService.Heartbeat:Connect(function()
+        if not getgenv().AutoLockEnabled then return end
 
-    local vehicle = Vehicle_upvr.current_driving.get()
-    local lockButton = UI_upvr.get("LockVehicleButton")
-    
-    if vehicle then
-        local vehicleState = Vehicle_upvr.class.get(vehicle).states
-        -- ถ้ายานพาหนะยังไม่ล็อค ให้ล็อคทันที
-        if not vehicleState.locked.get() then
-            Net_upvr.send("lock_vehicle", vehicle, true)
-            module_upvr.enabled.set(true)
+        local vehicle = Vehicle_upvr.current_driving.get()
+        if vehicle then
+            local vehicleClass = Vehicle_upvr.class.get(vehicle)
+            local lockedState = vehicleClass.states.locked.get()
+            local lockButtonUI = UI_upvr.get("LockVehicleButton")
+
+            -- ตรวจสอบว่าได้นั่งรถแล้ว
+            if not vehicleClass then return end
+
+            if lockedState then
+
+                if lockButtonUI then
+                    lockButtonUI.Image = "rbxassetid://6249640130" -- ไอคอนล็อค
+                end
+            else
+
+                if lockButtonUI then
+                    lockButtonUI.Image = "rbxassetid://6249640130" -- ไอคอนล็อค
+                end
+
+                Net_upvr.send("lock_vehicle", vehicle, true)
+                vehicleClass.states.locked.set(true)
+            end
         end
-        -- เปลี่ยนไอคอนปุ่มล็อครถให้เป็นล็อค
-        if lockButton then
-            lockButton.Image = LOCK_ICON
-            lockButton.Visible = true
-        end
-    else
-        -- ถ้าไม่ได้ขึ้นยานพาหนะ ให้ปุ่มล็อคยังคงอยู่
-        if lockButton then
-            lockButton.Image = LOCK_ICON
-            lockButton.Visible = true
-        end
-        module_upvr.enabled.set(false)
-    end
+    end)
 end
 
--- เรียกทุกเฟรม
-game:GetService("RunService").Heartbeat:Connect(function()
-    pcall(AutoLockVehicle)
-end)
-
--- 🌟 ฟังก์ชัน Toggle สำหรับ UI
-function ToggleAutoLockVehicle(state)
-    AutoLockEnabled = state
+local function ToggleAutoLock(state)
+    getgenv().AutoLockEnabled = state
+    if state then
+        AutoLockVehicle()
+        print("✅ Auto Lock Vehicle: ON")
+    else
+        print("❌ Auto Lock Vehicle: OFF")
+        -- สามารถยกเลิก Heartbeat เพื่อลดโหลด
+        if autoLockConnection then
+            autoLockConnection:Disconnect()
+            autoLockConnection = nil
+        end
+    end
 end
 
 VehicleTab:Toggle({
     Title = "Auto Lock Vehicle",
-    Value = false,
+    Value = getgenv().AutoLockEnabled,
     Callback = function(state)
-        ToggleAutoLockVehicle(state)
+        ToggleAutoLock(state)
     end
 })
