@@ -2134,7 +2134,6 @@ local ITEM_COLORS = {
     ["RegularFertilizer"] = Color3.fromRGB(0, 170, 255),     
     ["RegularPot"] = Color3.fromRGB(0, 170, 255),     
     ["RegularSoil"] = Color3.fromRGB(0, 170, 255),     
-    ["Bull Energy"] = Color3.fromRGB(0, 170, 255),     
     ["Emergency Care Kit"] = Color3.fromRGB(0, 170, 255),     
     ["Pre Workout"] = Color3.fromRGB(0, 170, 255),     
 
@@ -2153,6 +2152,7 @@ local ITEM_COLORS = {
     ["Dolphinfish"] = Color3.fromRGB(0, 255, 0),         
     ["Northern Pike"] = Color3.fromRGB(0, 255, 0),         
     ["SunflowerSeeds"] = Color3.fromRGB(0, 255, 0),         
+    ["Bull Energy"] = Color3.fromRGB(0, 255, 0),         
 
     ["M24"] = Color3.fromRGB(180, 0, 255),      -- ม่วง
     ["Double Barrel"] = Color3.fromRGB(180, 0, 255),  
