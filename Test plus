@@ -1,1 +1,54 @@
+local ConfigManager = Window.ConfigManager
+local Loaded = false
+local AutoSaveName = "MyAutoConfig"
+_G.LastConfigName = _G.LastConfigName or AutoSaveName
 
+local function SendNotify(title, content, icon)
+    if WindUI and WindUI.Notify then
+        WindUI:Notify({
+            Title = title or "Notification",
+            Content = content or "",
+            Duration = 1,
+            Icon = icon or "zap"
+        })
+    end
+end
+
+ConfigTab:Button({
+    Title = "Save Config",
+    Icon = "save",
+    Callback = function()
+        local oldCfg = ConfigManager:CreateConfig(AutoSaveName)
+        oldCfg:Delete()
+        local c = ConfigManager:CreateConfig(AutoSaveName)
+        c:Save()
+        _G.LastConfigName = AutoSaveName
+        SendNotify("Config Manager", "Config Successfully", "save")
+    end
+})
+
+task.spawn(function()
+    while not ConfigManager or not WindUI or not WindUI.Notify do
+        task.wait(0.5)
+    end
+
+    if Loaded then return end
+    Loaded = true
+
+    SendNotify("Config Manager", "Loading Config...", "clock")
+
+    task.wait(2)
+
+    local loadName = AutoSaveName
+    local success, err = pcall(function()
+        local cfg = ConfigManager:CreateConfig(loadName)
+        cfg:Load()
+    end)
+
+    if success then
+        _G.LastConfigName = loadName
+        SendNotify("Config Manager", "Config Successfully Loaded", "check")
+    else
+        SendNotify("Config Manager", "Load Failed: " .. tostring(err), "alert")
+    end
+end)
