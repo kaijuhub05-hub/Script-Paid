@@ -1,24 +1,36 @@
 local Players = game:GetService("Players")
 local LocalPlayer = Players.LocalPlayer
 local ReplicatedStorage = game:GetService("ReplicatedStorage")
+local task = task
+
+local WindUI = WindUI -- สมมติว่ามี WindUI โหลดแล้ว
 local Net = require(ReplicatedStorage.Modules.Core.Net)
+
+-- Kick bypass
+local kickF
+kickF = hookfunction(LocalPlayer.Kick, function(p12, p13, p14, p15, ...)
+    return p12(p13, p14, p15, ...)
+end)
 
 CheaterTab:Button({
     Title = "Invisible & Respawn",
-    Desc = "Press to go invisible and instantly respawn 🛡️",
+    Desc = "Press to go invisible and respawn immediately.🛡️",
     Callback = function()
+        -- แจ้งผู้เล่น
         WindUI:Notify({
             Title = "Invisible ✅",
-            Content = "Invisibility is now working. Respawn triggered 🛡️",
-            Icon = "shield",
+            Content = "Invisibility and auto respawn activated.🛡️",
+            Icon = "shield"
         })
 
         task.spawn(function()
+            -- ใช้ FFlag เพื่อทำ invisibility
             setfflag("NextGenReplicatorEnabledWrite4", "false")
             task.wait(5)
             setfflag("NextGenReplicatorEnabledWrite4", "true")
         end)
 
+        -- สั่งตัวเองตาย / รีเซ็ตตัว
         task.spawn(function()
             Net.send("request_respawn")
         end)
