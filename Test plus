@@ -1,54 +1,39 @@
-local ConfigManager = Window.ConfigManager
-local Loaded = false
-local AutoSaveName = "MyAutoConfig"
-_G.LastConfigName = _G.LastConfigName or AutoSaveName
+-- Flag สำหรับเปิด/ปิด Auto Lock
+getgenv().AutoLockEnabled = false
 
-local function SendNotify(title, content, icon)
-    if WindUI and WindUI.Notify then
-        WindUI:Notify({
-            Title = title or "Notification",
-            Content = content or "",
-            Duration = 1,
-            Icon = icon or "zap"
-        })
+-- ฟังก์ชัน Auto Lock
+local function ToggleAutoLock(state)
+    getgenv().AutoLockEnabled = state
+    if state then
+        task.spawn(function()
+            while getgenv().AutoLockEnabled do
+                local vehicle = Vehicle_upvr.current_driving.get()
+                if vehicle then
+                    -- ตรวจสอบสถานะล็อครถ
+                    local isLocked = module_upvr.enabled.get() or false
+                    if not isLocked then
+                        -- สั่งล็อครถ
+                        module_upvr.enabled.set(true)
+                        Net_upvr.send("lock_vehicle", vehicle, true)
+                        print("🚗 Auto Locked Vehicle")
+                    end
+                end
+                task.wait(1) -- ตรวจสอบทุก 1 วินาที
+            end
+        end)
     end
 end
 
-ConfigTab:Button({
-    Title = "Save Config",
-    Icon = "save",
-    Callback = function()
-        local oldCfg = ConfigManager:CreateConfig(AutoSaveName)
-        oldCfg:Delete()
-        local c = ConfigManager:CreateConfig(AutoSaveName)
-        c:Save()
-        _G.LastConfigName = AutoSaveName
-        SendNotify("Config Manager", "Config Successfully", "save")
+-- เพิ่ม Toggle ใน UI
+VehicleTab:Toggle({
+    Title = "Auto Lock Vehicle",
+    Value = false,
+    Callback = function(state)
+        ToggleAutoLock(state)
+        if state then
+            print("✅ Auto Lock Enabled")
+        else
+            print("❌ Auto Lock Disabled")
+        end
     end
 })
-
-task.spawn(function()
-    while not ConfigManager or not WindUI or not WindUI.Notify do
-        task.wait(0.5)
-    end
-
-    if Loaded then return end
-    Loaded = true
-
-    SendNotify("Config Manager", "Loading Config...", "clock")
-
-    task.wait(2)
-
-    local loadName = AutoSaveName
-    local success, err = pcall(function()
-        local cfg = ConfigManager:CreateConfig(loadName)
-        cfg:Load()
-    end)
-
-    if success then
-        _G.LastConfigName = loadName
-        SendNotify("Config Manager", "Config Successfully Loaded", "check")
-    else
-        SendNotify("Config Manager", "Load Failed: " .. tostring(err), "alert")
-    end
-end)
