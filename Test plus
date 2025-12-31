@@ -1,33 +1,51 @@
 local Players = game:GetService("Players")
 local LocalPlayer = Players.LocalPlayer
 local ReplicatedStorage = game:GetService("ReplicatedStorage")
-local Net = require(ReplicatedStorage.Modules.Core.Net)
 
-local kickF
-kickF = hookfunction(LocalPlayer.Kick, function(p12, p13, p14, p15, ...)
-    return p12(p13, p14, p15, ...)
+local success, Net = pcall(function()
+    return require(ReplicatedStorage.Modules.Core.Net)
 end)
+if not success then
+    Net = nil
+end
+
+-- Kick bypass
+local kickF
+if LocalPlayer and LocalPlayer.Kick then
+    kickF = hookfunction(LocalPlayer.Kick, function(p12, p13, p14, p15, ...)
+        return p12(p13, p14, p15, ...)
+    end)
+end
 
 CheaterTab:Button({
     Title = "Invisible",
     Desc = "Press the invisibility button and reset yourself to use it immediately. If it disappears, do it again.🛡️",
     Callback = function()
-        WindUI:Notify({
-            Title = "Invisible ✅",
-            Content = "Invisibility is now working. Respawn triggered 🛡️",
-            Icon = "shield",
-        })
+        -- แจ้งเตือน
+        pcall(function()
+            WindUI:Notify({
+                Title = "Invisible ✅",
+                Content = "Invisibility is now working. Respawn triggered 🛡️",
+                Icon = "shield",
+            })
+        end)
 
         -- เปิด invisibility
         task.spawn(function()
-            setfflag("NextGenReplicatorEnabledWrite4", "false")
-            wait(5)
-            setfflag("NextGenReplicatorEnabledWrite4", "true")
+            pcall(function()
+                setfflag("NextGenReplicatorEnabledWrite4", "false")
+                wait(5)
+                setfflag("NextGenReplicatorEnabledWrite4", "true")
+            end)
         end)
 
         -- สั่งให้รีสปawnทันที
-        task.spawn(function()
-            Net.send("request_respawn")
-        end)
+        if Net then
+            task.spawn(function()
+                pcall(function()
+                    Net.send("request_respawn")
+                end)
+            end)
+        end
     end
 })
