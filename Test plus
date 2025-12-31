@@ -1,36 +1,55 @@
-getgenv().AutoLockEnabled = false
+-- ตัวแปรเปิดปิด Auto Lock
+local AutoLockEnabled = false
 
-local function ToggleAutoLock(state)
-    getgenv().AutoLockEnabled = state
-    if state then
-        task.spawn(function()
-            while getgenv().AutoLockEnabled do
-                local vehicle = Vehicle_upvr.current_driving.get()
-                if vehicle then
+-- ไอคอนล็อครถ
+local LOCK_ICON = "rbxassetid://6249640130"      -- ล็อค
+local UNLOCK_ICON = "rbxassetid://14061898347"  -- ปลดล็อค
 
-                    local isLocked = module_upvr.enabled.get() or false
-                    if not isLocked then
-                        -- สั่งล็อครถ
-                        module_upvr.enabled.set(true)
-                        Net_upvr.send("lock_vehicle", vehicle, true)
-                        print("🚗 Auto Locked Vehicle")
-                    end
-                end
-                task.wait(1) 
-            end
-        end)
+-- ฟังก์ชันตรวจสอบและล็อครถอัตโนมัติ
+local function AutoLockVehicle()
+    if not AutoLockEnabled then return end
+
+    local vehicle = Vehicle_upvr.current_driving.get()
+    local lockButton = UI_upvr.get("LockVehicleButton")
+    
+    if vehicle then
+        local vehicleState = Vehicle_upvr.class.get(vehicle).states
+        -- ถ้ายานพาหนะยังไม่ล็อค ให้ล็อคทันที
+        if not vehicleState.locked.get() then
+            Net_upvr.send("lock_vehicle", vehicle, true)
+            module_upvr.enabled.set(true)
+        end
+        -- เปลี่ยนไอคอนปุ่มล็อครถให้เป็นล็อค
+        if lockButton then
+            lockButton.Image = LOCK_ICON
+            lockButton.Visible = true
+        end
+    else
+        -- ถ้าไม่ได้ขึ้นยานพาหนะ ให้ปุ่มล็อคยังคงอยู่
+        if lockButton then
+            lockButton.Image = LOCK_ICON
+            lockButton.Visible = true
+        end
+        module_upvr.enabled.set(false)
     end
 end
 
-VehicleTab:Toggle({
+-- เรียกทุกเฟรม
+game:GetService("RunService").Heartbeat:Connect(function()
+    pcall(AutoLockVehicle)
+end)
+
+-- 🌟 ฟังก์ชัน Toggle สำหรับ UI
+function ToggleAutoLockVehicle(state)
+    AutoLockEnabled = state
+end
+
+-- ตัวอย่างการสร้างปุ่มเปิดปิดใน UI
+-- สมมติว่า EspTab คือ Tab ของคุณ
+EspTab:Toggle({
     Title = "Auto Lock Vehicle",
     Value = false,
     Callback = function(state)
-        ToggleAutoLock(state)
-        if state then
-            print("✅ Auto Lock Enabled")
-        else
-            print("❌ Auto Lock Disabled")
-        end
+        ToggleAutoLockVehicle(state)
     end
 })
