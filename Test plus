@@ -1,31 +1,11 @@
-if not game or not game:GetService then return end
 local Players = game:GetService("Players")
-if not Players then return end
 local LocalPlayer = Players.LocalPlayer
-if not LocalPlayer then return end
 local ReplicatedStorage = game:GetService("ReplicatedStorage")
-if not ReplicatedStorage then return end
-
-local Net
-local success, result = pcall(function()
-    return require(ReplicatedStorage.Modules.Core.Net)
-end)
-if success then
-    Net = result
-else
-    return
-end
-
-local kickF
-kickF = hookfunction(LocalPlayer.Kick, function(p12, p13, p14, p15, ...)
-    return p12(p13, p14, p15, ...)
-end)
-
-if not WindUI or not CheaterTab then return end
+local Net = require(ReplicatedStorage.Modules.Core.Net)
 
 CheaterTab:Button({
     Title = "Invisible & Respawn",
-    Desc = "Press to go invisible and instantly respawn with bypass 🛡️",
+    Desc = "Press to go invisible and instantly respawn 🛡️",
     Callback = function()
         WindUI:Notify({
             Title = "Invisible ✅",
