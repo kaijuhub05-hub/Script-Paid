@@ -109,8 +109,8 @@ EspTab:Section({Title="Esp PLAYER  :"})
 local ServerTab = Window:Tab({Title = "Server", Icon = "server"})
 ServerTab:Section({Title="🌐 state :"})
 
-local SettingsTab = Window:Tab({Title = "Settings", Icon = "settings"})
-SettingsTab:Section({Title="discord :"})
+local VehicleTab = Window:Tab({Title = "VEHICLE:", Icon = "car"})
+VehicleTab:Section({Title="car Mods :"})
 
 local SilentAimEnabledValue = Instance.new("BoolValue")
 SilentAimEnabledValue.Name = "SilentAimEnabled"
@@ -2600,5 +2600,42 @@ ServerTab:Button({
     Title = "Rejoin",
     Callback = function()
         Rejoin()
+    end
+})
+
+getgenv().AutoLockEnabled = false
+
+local function ToggleAutoLock(state)
+    getgenv().AutoLockEnabled = state
+    if state then
+        task.spawn(function()
+            while getgenv().AutoLockEnabled do
+                local vehicle = Vehicle_upvr.current_driving.get()
+                if vehicle then
+
+                    local isLocked = module_upvr.enabled.get() or false
+                    if not isLocked then
+                        -- สั่งล็อครถ
+                        module_upvr.enabled.set(true)
+                        Net_upvr.send("lock_vehicle", vehicle, true)
+                        print("🚗 Auto Locked Vehicle")
+                    end
+                end
+                task.wait(1) 
+            end
+        end)
+    end
+end
+
+VehicleTab:Toggle({
+    Title = "Auto Lock Vehicle",
+    Value = false,
+    Callback = function(state)
+        ToggleAutoLock(state)
+        if state then
+            print("✅ Auto Lock Enabled")
+        else
+            print("❌ Auto Lock Disabled")
+        end
     end
 })
