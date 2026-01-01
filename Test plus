@@ -1,43 +1,47 @@
+-- Services
 local Players = game:GetService("Players")
-local LocalPlayer = Players.LocalPlayer
 local ReplicatedStorage = game:GetService("ReplicatedStorage")
-local WindUI = loadstring(game:HttpGet("https://github.com/Footagesus/WindUI/releases/download/1.6.53/main.lua"))()
 
-local Net = require(ReplicatedStorage.Modules.Core.Net)
+-- Local Player
+local LocalPlayer = Players.LocalPlayer
 
--- Kick bypass
-hookfunction(LocalPlayer.Kick, function(p12, p13, p14, p15, ...)
-    return p12(p13, p14, p15, ...)
+-- Net Module (ถ้ามี)
+local Net
+pcall(function()
+    Net = require(ReplicatedStorage.Modules.Core.Net)
 end)
 
--- ฟังก์ชันสั่งตัวตาย / รีเซ็ตตัวละคร
-local function respawnPlayer()
-    pcall(function()
-        Net.send("request_respawn")
+-- Function: Invisible & Respawn
+local function invisibleRespawn()
+    task.spawn(function()
+        pcall(function()
+            setfflag("NextGenReplicatorEnabledWrite4", "false")
+            wait(0.1)
+            if Net then
+                Net.send("request_respawn")
+            end
+            wait(5)
+            setfflag("NextGenReplicatorEnabledWrite4", "true")
+        end)
     end)
 end
 
--- ปุ่มล่องหน/invisibility + รีเซ็ตตัวเอง
+-- Button
 CheaterTab:Button({
     Title = "Invisible & Respawn",
     Desc = "Press to become invisible and respawn immediately.",
-    Callback = function()
-        pcall(function()
-            WindUI:Notify({
-                Title = "Invisible ✅",
-                Content = "Invisibility is now working.🛡️🛡️",
-                Icon = "shield",
-            })
-        end)
-
-        task.spawn(function()
-            pcall(function()
-                setfflag("NextGenReplicatorEnabledWrite4", "false")
-                wait(0.1)
-                respawnPlayer()
-                wait(5)
-                setfflag("NextGenReplicatorEnabledWrite4", "true")
-            end)
-        end)
-    end
+    Callback = invisibleRespawn
 })
+
+-- Kick Bypass
+task.defer(function()
+    pcall(function()
+        for _, conn in ipairs(getconnections(LocalPlayer.OnKick)) do
+            if conn.Function then
+                hookfunction(conn.Function, function(p12, p13, p14, p15, ...)
+                    return p12(p13, p14, p15, ...)
+                end)
+            end
+        end
+    end)
+end)
