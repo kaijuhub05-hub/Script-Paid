@@ -116,8 +116,8 @@ EspTab:Section({Title="Esp PLAYER  :"})
 local ServerTab = Window:Tab({Title = "Server", Icon = "server"})
 ServerTab:Section({Title="🌐 state :"})
 
-local VehicleTab = Window:Tab({Title = "VEHICLE:", Icon = "car"})
-VehicleTab:Section({Title="car Mods :"})
+local MiscTab = Window:Tab({Title = "MISC:", Icon = "monitor"})
+MiscTab:Section({Title="GAME Mods :"})
 
 local SilentAimEnabledValue = Instance.new("BoolValue")
 SilentAimEnabledValue.Name = "SilentAimEnabled"
