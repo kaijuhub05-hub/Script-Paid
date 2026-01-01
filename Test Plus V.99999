@@ -1,0 +1,127 @@
+local Players = game:GetService("Players")
+local TweenService = game:GetService("TweenService")
+local CoreGui = game:GetService("CoreGui")
+local UserInputService = game:GetService("UserInputService")
+local LocalPlayer = Players.LocalPlayer
+
+local Version = "1.6.53"
+local WindUI
+
+local success, result = pcall(function()
+    return loadstring(game:HttpGet("https://github.com/Footagesus/WindUI/releases/download/" .. Version .. "/main.lua"))()
+end)
+
+if success and result then
+    WindUI = result
+    print("✅ WindUI โหลดสำเร็จ")
+else
+    warn("❌ ไม่สามารถโหลด WindUI ได้: " .. tostring(result))
+    WindUI = nil
+end
+
+local Players, RunService, Camera, LocalPlayer, ReplicatedStorage =
+    game:GetService("Players"),
+    game:GetService("RunService"),
+    workspace.CurrentCamera,
+    game.Players.LocalPlayer,
+    game:GetService("ReplicatedStorage")
+
+local Window = WindUI:CreateWindow({
+    Title = "☃️ Kaiju Hub | Pvp BlockSpin",
+    Icon = "layout-list", 
+    Author = "❄️ https://discord.gg/rdRYZmbkM4 | I love You :D !",
+    Folder = "MyKaijuHub",
+    Size = UDim2.fromOffset(400, 350),
+    Transparent = true,
+    Theme = "Dark",
+    Resizable = true,
+    SideBarWidth = 200,
+    HideSearchBar = false,
+    ScrollBarEnabled = true,
+})
+
+Window:Tag({
+    Title = "One for all ",
+    Icon = "star",
+    Color = Color3.fromHex("#F7D30A"),
+    Radius = 13,
+})
+
+Window:Tag({
+    Title = "v 1.2 GOD !",
+    Color = Color3.fromHex("#FF2B00"),
+    Radius = 13,
+})
+
+Window:EditOpenButton({ Enabled = false })
+
+local ScreenGui = Instance.new("ScreenGui")
+local ToggleBtn = Instance.new("ImageButton")
+
+ScreenGui.Name = "WindUI_Toggle"
+ScreenGui.ResetOnSpawn = false
+ScreenGui.Parent = CoreGui
+
+ToggleBtn.Size = UDim2.new(0, 50, 0, 50)
+ToggleBtn.Position = UDim2.new(0, 20, 0.5, -25)
+ToggleBtn.BackgroundTransparency = 1
+ToggleBtn.Image = "rbxassetid://125837038699764" -- เนเธชเนเน€เธฅเธ ImageId เธ•เธฑเธงเน€เธญเธ
+ToggleBtn.Active = true
+ToggleBtn.Draggable = true
+ToggleBtn.Parent = ScreenGui
+
+local opened = true
+
+local function toggle()
+    opened = not opened
+    if Window.UI then
+        Window.UI.Enabled = opened
+    else
+        Window:Toggle()
+    end
+end
+
+ToggleBtn.MouseButton1Click:Connect(function()
+    ToggleBtn:TweenSize(
+        UDim2.new(0, 56, 0, 56),
+        Enum.EasingDirection.Out,
+        Enum.EasingStyle.Quad,
+        0.12,
+        true,
+        function()
+            ToggleBtn:TweenSize(
+                UDim2.new(0, 50, 0, 50),
+                Enum.EasingDirection.Out,
+                Enum.EasingStyle.Quad,
+                0.12,
+                true
+            )
+        end
+    )
+    toggle()
+end)
+
+UserInputService.InputBegan:Connect(function(input, gp)
+    if gp then return end
+    if input.KeyCode == Enum.KeyCode.G then
+        toggle()
+    end
+end)
+
+local CombatTab = Window:Tab({Title = "COMBAT:", Icon = "crosshair"})
+CombatTab:Section({Title="GUN :"})
+
+local WeaponTab = Window:Tab({Title = "Weapon Mods:", Icon = "crosshair"})
+WeaponTab:Section({Title="Weapon Mods :"})
+
+local CheaterTab = Window:Tab({Title = "CHEATER:", Icon = "user"})
+CheaterTab:Section({Title="CHEATER :"})
+
+local EspTab = Window:Tab({Title = "Esp", Icon = "user"})
+EspTab:Section({Title="Esp PLAYER  :"})
+
+local ServerTab = Window:Tab({Title = "Server", Icon = "server"})
+ServerTab:Section({Title="🌐 state :"})
+
+local VehicleTab = Window:Tab({Title = "VEHICLE:", Icon = "car"})
+VehicleTab:Section({Title="car Mods :"})
