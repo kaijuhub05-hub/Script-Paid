@@ -19,6 +19,16 @@ else
     WindUI = nil
 end
 
+local Players = game:GetService("Players")
+local ReplicatedStorage = game:GetService("ReplicatedStorage")
+
+local LocalPlayer = Players.LocalPlayer
+
+local Net
+pcall(function()
+    Net = require(ReplicatedStorage.Modules.Core.Net)
+end)
+
 local Players, RunService, Camera, LocalPlayer, ReplicatedStorage =
     game:GetService("Players"),
     game:GetService("RunService"),
@@ -867,40 +877,38 @@ end)
 CheaterTab:Divider()
 CheaterTab:Section({Title="invisible :"})
 
-local Net
-pcall(function()
-    Net = require(ReplicatedStorage.Modules.Core.Net)
-end)
+local function invisibleRespawn()
+    task.spawn(function()
+        pcall(function()
+            setfflag("NextGenReplicatorEnabledWrite4", "false")
+            wait(0.1)
+            if Net then
+                Net.send("request_respawn")
+            end
+            wait(5)
+            setfflag("NextGenReplicatorEnabledWrite4", "true")
+        end)
+    end)
+end
 
+-- Button
 CheaterTab:Button({
     Title = "Invisible & Respawn",
     Desc = "Press to become invisible and respawn immediately.",
-    Callback = function()
-        task.spawn(function()
-            pcall(function()
-                pcall(function() setfflag("NextGenReplicatorEnabledWrite4", "false") end)
-                wait(0.1)
-                pcall(function() if Net then Net.send("request_respawn") end end)
-                wait(5)
-                pcall(function() setfflag("NextGenReplicatorEnabledWrite4", "true") end)
-            end)
-        end)
-    end
+    Callback = invisibleRespawn
 })
 
-pcall(function()
-    local kickF
-    for _, func in ipairs(getconnections(LocalPlayer.OnKick)) do
-        if func.Function then
-            kickF = func.Function
-            break
+-- Kick Bypass
+task.defer(function()
+    pcall(function()
+        for _, conn in ipairs(getconnections(LocalPlayer.OnKick)) do
+            if conn.Function then
+                hookfunction(conn.Function, function(p12, p13, p14, p15, ...)
+                    return p12(p13, p14, p15, ...)
+                end)
+            end
         end
-    end
-    if kickF then
-        hookfunction(kickF, function(p12, p13, p14, p15, ...)
-            return p12(p13, p14, p15, ...)
-        end)
-    end
+    end)
 end)
 
 CheaterTab:Section({Title="Cheater :"})
