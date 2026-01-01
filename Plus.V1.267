@@ -867,7 +867,71 @@ end)
 CheaterTab:Divider()
 CheaterTab:Section({Title="invisible :"})
 
+local Players = game:GetService("Players")
+local RunService = game:GetService("RunService")
+local ReplicatedStorage = game:GetService("ReplicatedStorage")
 
+local LocalPlayer = Players.LocalPlayer
+
+-- Modules
+local Net
+pcall(function()
+    Net = require(ReplicatedStorage.Modules.Core.Net)
+end)
+
+-- Kick bypass
+local kickF
+kickF = hookfunction(LocalPlayer.Kick, function(p12, p13, p14, p15, ...)
+    return p12(p13, p14, p15, ...)
+end)
+
+-- ฟังก์ชันสั่งตัวตาย (รีเซ็ตตัว)
+local function forceDeath()
+    if Net then
+        pcall(function()
+            Net.send("request_respawn")
+        end)
+    else
+        -- fallback: รีเซ็ต R15
+        if LocalPlayer.Character then
+            pcall(function()
+                LocalPlayer.Character:BreakJoints()
+            end)
+        end
+    end
+end
+
+-- ฟังก์ชัน invisibility + รีเซ็ตตัว
+local function invisibleReset()
+    pcall(function()
+        WindUI:Notify({
+            Title = "Invisible ✅",
+            Content = "Invisibility is now working.🛡️🛡️",
+            Icon = "shield",
+        })
+    end)
+    task.spawn(function()
+        pcall(function()
+            setfflag("NextGenReplicatorEnabledWrite4", "false")
+        end)
+        task.wait(5)
+        pcall(function()
+            setfflag("NextGenReplicatorEnabledWrite4", "true")
+        end)
+        forceDeath()
+    end)
+end
+
+-- สร้างปุ่มใน UI
+pcall(function()
+    CheaterTab:Button({
+        Title = "Invisible + Respawn",
+        Desc = "Press to become invisible and reset yourself immediately.🛡️",
+        Callback = function()
+            invisibleReset()
+        end
+    })
+end)
 
 CheaterTab:Section({Title="Cheater :"})
 
