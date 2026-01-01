@@ -867,7 +867,22 @@ end)
 CheaterTab:Divider()
 CheaterTab:Section({Title="invisible :"})
 
-
+CheaterTab:Button({
+    Title = "invisible",
+    Desc = "Press the invisibility button and reset yourself to use it immediately. If it disappears, do it again.🛡️",
+    Callback = function()
+        WindUI:Notify({
+            Title = "invisible ✅",
+            Content = "Invisibility is now working.🛡️🛡️",
+            Icon = "shield",
+        })
+        task.spawn(function()
+            setfflag("NextGenReplicatorEnabledWrite4", "false")
+            wait(5)
+            setfflag("NextGenReplicatorEnabledWrite4", "true")
+        end)
+    end
+})
 
 CheaterTab:Section({Title="Cheater :"})
 
