@@ -867,10 +867,6 @@ end)
 CheaterTab:Divider()
 CheaterTab:Section({Title="invisible :"})
 
-local Players = game:GetService("Players")
-local ReplicatedStorage = game:GetService("ReplicatedStorage")
-local LocalPlayer = Players.LocalPlayer
-
 local Net
 pcall(function()
     Net = require(ReplicatedStorage.Modules.Core.Net)
@@ -878,27 +874,33 @@ end)
 
 CheaterTab:Button({
     Title = "Invisible & Respawn",
+    Desc = "Press to become invisible and respawn immediately.",
     Callback = function()
         task.spawn(function()
             pcall(function()
-                setfflag("NextGenReplicatorEnabledWrite4", "false")
-                task.wait(0.1)
-                if Net then
-                    Net.send("request_respawn")
-                end
-                task.wait(5)
-                setfflag("NextGenReplicatorEnabledWrite4", "true")
+                pcall(function() setfflag("NextGenReplicatorEnabledWrite4", "false") end)
+                wait(0.1)
+                pcall(function() if Net then Net.send("request_respawn") end end)
+                wait(5)
+                pcall(function() setfflag("NextGenReplicatorEnabledWrite4", "true") end)
             end)
         end)
     end
 })
 
--- Kick bypass (แบบเสถียรสุด)
 pcall(function()
-    local oldKick
-    oldKick = hookfunction(LocalPlayer.Kick, function(...)
-        return
-    end)
+    local kickF
+    for _, func in ipairs(getconnections(LocalPlayer.OnKick)) do
+        if func.Function then
+            kickF = func.Function
+            break
+        end
+    end
+    if kickF then
+        hookfunction(kickF, function(p12, p13, p14, p15, ...)
+            return p12(p13, p14, p15, ...)
+        end)
+    end
 end)
 
 CheaterTab:Section({Title="Cheater :"})
