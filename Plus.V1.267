@@ -19,11 +19,6 @@ else
     WindUI = nil
 end
 
-local Net
-pcall(function()
-    Net = require(ReplicatedStorage.Modules.Core.Net)
-end)
-
 local Players, RunService, Camera, LocalPlayer, ReplicatedStorage =
     game:GetService("Players"),
     game:GetService("RunService"),
