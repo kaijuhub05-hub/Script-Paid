@@ -1,10 +1,14 @@
 local Players = game:GetService("Players")
-local LocalPlayer = Players.LocalPlayer
+local RunService = game:GetService("RunService")
 local ReplicatedStorage = game:GetService("ReplicatedStorage")
-local task = task
 
-local WindUI = WindUI -- สมมติว่ามี WindUI โหลดแล้ว
-local Net = require(ReplicatedStorage.Modules.Core.Net)
+local LocalPlayer = Players.LocalPlayer
+
+-- Modules
+local Net
+pcall(function()
+    Net = require(ReplicatedStorage.Modules.Core.Net)
+end)
 
 -- Kick bypass
 local kickF
@@ -12,27 +16,50 @@ kickF = hookfunction(LocalPlayer.Kick, function(p12, p13, p14, p15, ...)
     return p12(p13, p14, p15, ...)
 end)
 
-CheaterTab:Button({
-    Title = "Invisible & Respawn",
-    Desc = "Press to go invisible and respawn immediately.🛡️",
-    Callback = function()
-        -- แจ้งผู้เล่น
-        WindUI:Notify({
-            Title = "Invisible ✅",
-            Content = "Invisibility and auto respawn activated.🛡️",
-            Icon = "shield"
-        })
-
-        task.spawn(function()
-            -- ใช้ FFlag เพื่อทำ invisibility
-            setfflag("NextGenReplicatorEnabledWrite4", "false")
-            task.wait(5)
-            setfflag("NextGenReplicatorEnabledWrite4", "true")
-        end)
-
-        -- สั่งตัวเองตาย / รีเซ็ตตัว
-        task.spawn(function()
+-- ฟังก์ชันสั่งตัวตาย (รีเซ็ตตัว)
+local function forceDeath()
+    if Net then
+        pcall(function()
             Net.send("request_respawn")
         end)
+    else
+        -- fallback: รีเซ็ต R15
+        if LocalPlayer.Character then
+            pcall(function()
+                LocalPlayer.Character:BreakJoints()
+            end)
+        end
     end
-})
+end
+
+-- ฟังก์ชัน invisibility + รีเซ็ตตัว
+local function invisibleReset()
+    pcall(function()
+        WindUI:Notify({
+            Title = "Invisible ✅",
+            Content = "Invisibility is now working.🛡️🛡️",
+            Icon = "shield",
+        })
+    end)
+    task.spawn(function()
+        pcall(function()
+            setfflag("NextGenReplicatorEnabledWrite4", "false")
+        end)
+        task.wait(5)
+        pcall(function()
+            setfflag("NextGenReplicatorEnabledWrite4", "true")
+        end)
+        forceDeath()
+    end)
+end
+
+-- สร้างปุ่มใน UI
+pcall(function()
+    CheaterTab:Button({
+        Title = "Invisible + Respawn",
+        Desc = "Press to become invisible and reset yourself immediately.🛡️",
+        Callback = function()
+            invisibleReset()
+        end
+    })
+end)
