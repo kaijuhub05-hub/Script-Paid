@@ -4,11 +4,6 @@ local CoreGui = game:GetService("CoreGui")
 local UserInputService = game:GetService("UserInputService")
 local LocalPlayer = Players.LocalPlayer
 
-local Players = game:GetService("Players")
-local LocalPlayer = Players.LocalPlayer
-local ReplicatedStorage = game:GetService("ReplicatedStorage")
-local task = task
-
 local Version = "1.6.53"
 local WindUI
 
@@ -23,7 +18,6 @@ else
     warn("❌ ไม่สามารถโหลด WindUI ได้: " .. tostring(result))
     WindUI = nil
 end
-local Net = require(ReplicatedStorage.Modules.Core.Net)
 
 local Players, RunService, Camera, LocalPlayer, ReplicatedStorage =
     game:GetService("Players"),
@@ -873,35 +867,7 @@ end)
 CheaterTab:Divider()
 CheaterTab:Section({Title="invisible :"})
 
-local kickF
-kickF = hookfunction(LocalPlayer.Kick, function(p12, p13, p14, p15, ...)
-    return p12(p13, p14, p15, ...)
-end)
 
-CheaterTab:Button({
-    Title = "Invisible & Respawn",
-    Desc = "Press to go invisible and respawn immediately.🛡️",
-    Callback = function()
-        -- แจ้งผู้เล่น
-        WindUI:Notify({
-            Title = "Invisible ✅",
-            Content = "Invisibility and auto respawn activated.🛡️",
-            Icon = "shield"
-        })
-
-        task.spawn(function()
-            -- ใช้ FFlag เพื่อทำ invisibility
-            setfflag("NextGenReplicatorEnabledWrite4", "false")
-            task.wait(5)
-            setfflag("NextGenReplicatorEnabledWrite4", "true")
-        end)
-
-        -- สั่งตัวเองตาย / รีเซ็ตตัว
-        task.spawn(function()
-            Net.send("request_respawn")
-        end)
-    end
-})
 
 CheaterTab:Section({Title="Cheater :"})
 
