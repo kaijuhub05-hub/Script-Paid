@@ -27,9 +27,9 @@ local Players, RunService, Camera, LocalPlayer, ReplicatedStorage =
     game:GetService("ReplicatedStorage")
 
 local Window = WindUI:CreateWindow({
-    Title = "Kaiju Hub | Pvp BlockSpin Plus",
+    Title = "Kaiju Hub | Pvp BlockSpin | Plus",
     Icon = "layout-list", 
-    Author = "https://discord.gg/rdRYZmbkM4 | I Like You:D !",
+    Author = "https://discord.gg/rdRYZmbkM4 | Yay :D !",
     Folder = "MyKaijuHub",
     Size = UDim2.fromOffset(400, 350),
     Transparent = true,
