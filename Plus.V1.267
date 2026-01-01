@@ -2609,3 +2609,40 @@ ServerTab:Button({
         Rejoin()
     end
 })
+
+local function KaijuHub_BoostFPS()
+    local lighting = game:GetService("Lighting")
+    local workspaceRef = game:GetService("Workspace")
+
+    lighting.GlobalShadows = false  
+    lighting.FogEnd = 100000  
+    lighting.Brightness = 2  
+    lighting.OutdoorAmbient = Color3.fromRGB(128,128,128)  
+    lighting.ShadowSoftness = 0  
+
+    for _, effect in pairs(lighting:GetChildren()) do  
+        if effect:IsA("BlurEffect") or effect:IsA("SunRaysEffect") or effect:IsA("ColorCorrectionEffect") or effect:IsA("BloomEffect") then  
+            effect.Enabled = false  
+        end  
+    end  
+
+    pcall(function()  
+        for _, obj in pairs(workspaceRef:GetDescendants()) do  
+            if obj:IsA("BasePart") then  
+                obj.Material = Enum.Material.Plastic  
+                obj.Reflectance = 0  
+            elseif obj:IsA("Texture") or obj:IsA("Decal") then  
+                obj.Transparency = 1  
+            end
+        end
+    end)  
+
+    print("✅ KaijuHub Boost FPS Applied!")
+end
+
+MiscTab:Button({
+    Title = "Boost FPS",
+    Callback = function()
+        KaijuHub_BoostFPS()
+    end
+})
