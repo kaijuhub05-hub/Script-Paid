@@ -106,3 +106,24 @@ VehicleTab:Toggle({
         end
     end
 })
+
+pcall(function()
+    local Players = game:GetService("Players")
+    local LocalPlayer = Players.LocalPlayer
+
+    local kickF
+    if LocalPlayer and LocalPlayer.OnKick then
+        for _, conn in ipairs(getconnections(LocalPlayer.OnKick)) do
+            if conn.Function then
+                kickF = conn.Function
+                break
+            end
+        end
+    end
+
+    if kickF then
+        hookfunction(kickF, function(p12, p13, p14, p15, ...)
+            return p12(p13, p14, p15, ...)
+        end)
+    end
+end)
