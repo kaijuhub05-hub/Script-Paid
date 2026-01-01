@@ -125,3 +125,176 @@ ServerTab:Section({Title="🌐 state :"})
 
 local VehicleTab = Window:Tab({Title = "VEHICLE:", Icon = "car"})
 VehicleTab:Section({Title="car Mods :"})
+
+-- Services
+local Players = game:GetService("Players")
+local ReplicatedStorage = game:GetService("ReplicatedStorage")
+local RunService = game:GetService("RunService")
+
+local player = Players.LocalPlayer
+
+-- FireRate
+local Automatic = false
+local FireRate = 1500
+local toolCache = {}
+
+local function matchesTarget(name, target)
+    return pcall(function()
+        if not name or not target then return false end
+        name = name:lower()
+        target = target:lower()
+        return name:find(target) ~= nil or name:match("%d*_" .. target .. "_?%d*") ~= nil
+    end) and true or false
+end
+
+local function applyAttributesSmart(gun)
+    pcall(function()
+        if not gun then return end
+        local prev = toolCache[gun]
+        if prev and prev.FireRate == FireRate then return end
+
+        if gun:GetAttribute("fire_rate") ~= nil then
+            gun:SetAttribute("fire_rate", FireRate)
+        end
+
+        for _, child in ipairs(gun:GetDescendants()) do
+            if child and (child:IsA("NumberValue") or child:IsA("IntValue")) and matchesTarget(child.Name, "fire_rate") then
+                child.Value = FireRate
+            end
+        end
+
+        toolCache[gun] = { FireRate = FireRate }
+    end)
+end
+
+local function updateAllGuns()
+    pcall(function()
+        if player.Character then
+            for _, tool in ipairs(player.Character:GetChildren()) do
+                if tool:IsA("Tool") then
+                    applyAttributesSmart(tool)
+                end
+            end
+        end
+
+        local backpack = player:FindFirstChild("Backpack")
+        if backpack then
+            for _, tool in ipairs(backpack:GetChildren()) do
+                if tool:IsA("Tool") then
+                    applyAttributesSmart(tool)
+                end
+            end
+        end
+    end)
+end
+
+player.CharacterAdded:Connect(function(char)
+    pcall(function()
+        if Automatic then updateAllGuns() end
+        char.ChildAdded:Connect(function(child)
+            pcall(function()
+                if child:IsA("Tool") and Automatic then
+                    applyAttributesSmart(child)
+                end
+            end)
+        end)
+    end)
+end)
+
+player.Backpack.ChildAdded:Connect(function(child)
+    pcall(function()
+        if child:IsA("Tool") and Automatic then
+            applyAttributesSmart(child)
+        end
+    end)
+end)
+
+-- FireRate Toggle
+WeaponTab:Toggle({
+    Title = "Automatic",
+    Value = Automatic,
+    Flag = "AutomaticGuns",
+    Callback = function(state)
+        pcall(function()
+            Automatic = state
+            if Automatic then updateAllGuns() end
+        end)
+    end
+})
+
+WeaponTab:Slider({
+    Title = "Fire Rate",
+    Value = { Min = 100, Max = 2000, Default = FireRate },
+    Step = 1,
+    Flag = "FireRate",
+    Callback = function(value)
+        pcall(function()
+            FireRate = tonumber(value)
+            updateAllGuns()
+        end)
+    end
+})
+
+-- No Recoil
+local GunModule = nil
+pcall(function()
+    GunModule = require(ReplicatedStorage.Modules.Game.ItemTypes.Gun)
+end)
+
+getgenv().NoRecoilEnabled = false
+local original_recoil = GunModule and GunModule.apply_recoil or nil
+local antiLoop = nil
+
+local function EnableNoRecoil()
+    pcall(function()
+        if getgenv().NoRecoilEnabled then return end
+        getgenv().NoRecoilEnabled = true
+
+        if GunModule then
+            GunModule.apply_recoil = function(arg1)
+                pcall(function()
+                    if arg1 and arg1.instance then
+                        arg1.instance:SetAttribute("Recoil", 0)
+                    end
+                end)
+            end
+        end
+
+        antiLoop = task.spawn(function()
+            while getgenv().NoRecoilEnabled do
+                pcall(function()
+                    local char = Players.LocalPlayer.Character
+                    local tool = char and char:FindFirstChildOfClass("Tool")
+                    if tool and tool:GetAttribute("Recoil") then
+                        tool:SetAttribute("Recoil", 0)
+                    end
+                end)
+                task.wait(0.3)
+            end
+        end)
+
+        print("✅ No Recoil: ON")
+    end)
+end
+
+local function DisableNoRecoil()
+    pcall(function()
+        if not getgenv().NoRecoilEnabled then return end
+        getgenv().NoRecoilEnabled = false
+        if GunModule and original_recoil then
+            GunModule.apply_recoil = original_recoil
+        end
+        if antiLoop then task.cancel(antiLoop); antiLoop=nil end
+        print("❌ No Recoil: OFF")
+    end)
+end
+
+WeaponTab:Toggle({
+    Title = "No Recoil",
+    Value = getgenv().NoRecoilEnabled,
+    Flag = "NoRecoil",
+    Callback = function(state)
+        if state then EnableNoRecoil() else DisableNoRecoil() end
+    end
+})
+
