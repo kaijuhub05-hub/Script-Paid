@@ -1,0 +1,663 @@
+local Players = game:GetService("Players")
+local TweenService = game:GetService("TweenService")
+local CoreGui = game:GetService("CoreGui")
+local UserInputService = game:GetService("UserInputService")
+local RunService = game:GetService("RunService")
+
+local player = Players.LocalPlayer
+
+local WindUI = loadstring(game:HttpGet("https://github.com/Footagesus/WindUI/releases/latest/download/main.lua"))()
+
+local Window = WindUI:CreateWindow({
+    Title = "KaBImx Hub |  Farm 🧑‍🌾 ",
+    Icon = "list",
+    Author = "My KBI | Cali Shootout💥 | I love You :D",
+    Folder = "MyKBIHub",
+    Size = UDim2.fromOffset(400, 350),
+    Transparent = true,
+    Theme = "Dark",
+    Resizable = true,
+    SideBarWidth = 200,
+    HideSearchBar = false,
+    ScrollBarEnabled = true,
+
+    KeySystem = { 
+        -- ↓ Optional. You can remove it.
+        Key = { "FreeKey_MyKBINewScript4321", "nil" },
+        
+        Note = "My Key System. Get Key 🔑 Discord Server",
+        
+        -- ↓ Optional. You can remove it.
+        Thumbnail = {
+            Image = "rbxassetid://71930673789876",
+        },
+        
+        -- ↓ Optional. You can remove it.
+        URL = "https://discord.gg/rdRYZmbkM4",
+        
+        -- ↓ Optional. You can remove it.
+        SaveKey = false, -- automatically save and load the key.
+        
+        -- ↓ Optional. You can remove it.
+        -- API = {} ← Services. Read about it below ↓
+    },
+})
+
+Window:Tag({
+    Title = "version Free",
+    Color = Color3.fromHex("#27F565"),
+    Radius = 13,
+})
+
+Window:EditOpenButton({ Enabled = false })
+
+local ScreenGui = Instance.new("ScreenGui")
+local ToggleBtn = Instance.new("ImageButton")
+
+ScreenGui.Name = "WindUI_Toggle"
+ScreenGui.ResetOnSpawn = false
+ScreenGui.Parent = CoreGui
+
+ToggleBtn.Size = UDim2.new(0, 50, 0, 50)
+ToggleBtn.Position = UDim2.new(0, 20, 0.5, -25)
+ToggleBtn.BackgroundTransparency = 1
+ToggleBtn.Image = "rbxassetid://91368673292596"
+ToggleBtn.Active = true
+ToggleBtn.Draggable = true
+ToggleBtn.Parent = ScreenGui
+
+local opened = true
+local function toggle()
+    opened = not opened
+    if Window.UI then
+        Window.UI.Enabled = opened
+    else
+        Window:Toggle()
+    end
+end
+
+ToggleBtn.MouseButton1Click:Connect(function()
+    ToggleBtn:TweenSize(
+        UDim2.new(0, 56, 0, 56),
+        Enum.EasingDirection.Out,
+        Enum.EasingStyle.Quad,
+        0.12,
+        true,
+        function()
+            ToggleBtn:TweenSize(
+                UDim2.new(0, 50, 0, 50),
+                Enum.EasingDirection.Out,
+                Enum.EasingStyle.Quad,
+                0.12,
+                true
+            )
+        end
+    )
+    toggle()
+end)
+
+UserInputService.InputBegan:Connect(function(input, gp)
+    if gp then return end
+    if input.KeyCode == Enum.KeyCode.G then
+        toggle()
+    end
+end)
+
+local CombatTab = Window:Tab({Title = "farming:", Icon = "crosshair"})
+CombatTab:Section({Title = "AUTO FARM JOB :"})
+
+local characterTab = Window:Tab({Title = "character:", Icon = "crosshair"})
+characterTab:Section({Title = "character Mods :"})
+
+local serverTab = Window:Tab({Title = "server:", Icon = "crosshair"})
+serverTab:Section({Title = "server Mods :"})
+
+local SPEED = 10
+local REACH_DISTANCE = 4
+local ORBIT_RADIUS = 3.5
+local ORBIT_HEIGHT = 1.5
+local ORBIT_SPEED = 3
+
+getgenv().AutoFarmGarbageJob = false
+getgenv().ShowPathBlock = true
+
+local SELECTED_JOB = "GarbageJob" -- "GarbageJob" | "BoxPickingJob"
+
+local character
+local hrp
+local state = "IDLE"
+local orbitAngle = 0
+
+-- ===== CHARACTER =====
+local function onCharacterAdded(char)
+    character = char
+    hrp = char:WaitForChild("HumanoidRootPart", 10)
+    state = "GET_GARBAGE"
+end
+
+if player.Character then
+    onCharacterAdded(player.Character)
+end
+player.CharacterAdded:Connect(onCharacterAdded)
+
+-- ===== MOVE =====
+local function flyStep(targetPos, dt)
+    local dir = targetPos - hrp.Position
+    local dist = dir.Magnitude
+    if dist <= REACH_DISTANCE then
+        return true
+    end
+    hrp.CFrame = hrp.CFrame + dir.Unit * SPEED * dt
+    return false
+end
+
+-- ===== TOOL SYSTEM =====
+local function GetValidTool()
+    if not character then return nil end
+    for _, v in ipairs(character:GetChildren()) do
+        if v:IsA("Tool") and v.Name ~= "Phone" then
+            return v
+        end
+    end
+    return nil
+end
+
+local function EquipAnyTool()
+    if not character then return end
+    local backpack = player:FindFirstChild("Backpack")
+    if not backpack then return end
+
+    for _, v in ipairs(backpack:GetChildren()) do
+        if v:IsA("Tool") and v.Name ~= "Phone" then
+            v.Parent = character
+            return
+        end
+    end
+end
+
+local function HasGarbageTool()
+    return character and character:FindFirstChild("Garbage") ~= nil
+end
+
+local function EquipGarbageTool()
+    if HasGarbageTool() then return end
+    local backpack = player:FindFirstChild("Backpack")
+    if backpack then
+        local tool = backpack:FindFirstChild("Garbage")
+        if tool then
+            tool.Parent = character
+        end
+    end
+end
+
+player.Backpack.ChildAdded:Connect(function(tool)
+    if tool:IsA("Tool") and tool.Name ~= "Phone" then
+        tool.Parent = character
+    end
+end)
+
+local function firePrompt(obj)
+    local prompt = obj and obj:FindFirstChildWhichIsA("ProximityPrompt", true)
+    if prompt then
+        prompt.HoldDuration = 0
+        fireproximityprompt(prompt)
+    end
+end
+
+-- ===== PATH BLOCK =====
+local PathBlock
+
+local function RemovePathBlock()
+    if PathBlock then
+        PathBlock:Destroy()
+        PathBlock = nil
+    end
+end
+
+local function CreatePathBlock()
+    if PathBlock then return end
+    PathBlock = Instance.new("Part")
+    PathBlock.Name = "Kaiju_PathBlock"
+    PathBlock.Anchored = true
+    PathBlock.CanCollide = false
+    PathBlock.Material = Enum.Material.Neon
+    PathBlock.Color = Color3.fromRGB(170, 0, 255)
+    PathBlock.Transparency = 0.15
+    PathBlock.Parent = workspace
+end
+
+-- ===== MAIN LOOP =====
+RunService.Heartbeat:Connect(function(dt)
+    if not getgenv().AutoFarmGarbageJob then
+        RemovePathBlock()
+        return
+    end
+    if not hrp or not hrp.Parent then return end
+
+    local jobSystem = workspace:FindFirstChild("Job System")
+    if not jobSystem then return end
+
+    local currentJob = jobSystem:FindFirstChild(SELECTED_JOB)
+    if not currentJob then return end
+
+    local BOX1 = currentJob:FindFirstChild("BOX1")
+    local JOB = currentJob:FindFirstChild("Job")
+
+    -- ===== UPDATE PATH BLOCK =====
+    if getgenv().ShowPathBlock and BOX1 then
+        local boxPart = BOX1:IsA("Model")
+            and (BOX1.PrimaryPart or BOX1:FindFirstChildWhichIsA("BasePart"))
+            or BOX1
+
+        if boxPart then
+            CreatePathBlock()
+            local startPos = hrp.Position - Vector3.new(0, hrp.Size.Y / 2 + 0.2, 0)
+            local endPos = boxPart.Position
+            local dir = endPos - startPos
+            local dist = dir.Magnitude
+
+            PathBlock.Size = Vector3.new(1.2, 0.2, dist)
+            PathBlock.CFrame = CFrame.new(startPos + dir / 2, endPos)
+        end
+    else
+        RemovePathBlock()
+    end
+
+    if not JOB then return end
+
+    -- ========= BoxPickingJob =========
+    if SELECTED_JOB == "BoxPickingJob" then
+        local tool = GetValidTool()
+        state = tool and "GO_JOB" or "GET_GARBAGE"
+
+        if state == "GET_GARBAGE" and BOX1 then
+            local boxPart = BOX1:IsA("Model")
+                and (BOX1.PrimaryPart or BOX1:FindFirstChildWhichIsA("BasePart"))
+                or BOX1
+
+            if boxPart and flyStep(boxPart.Position, dt) then
+                firePrompt(BOX1)
+                EquipAnyTool()
+            end
+            return
+        end
+
+        if state == "GO_JOB" then
+            local jobPart = JOB:IsA("Model")
+                and (JOB.PrimaryPart or JOB:FindFirstChildWhichIsA("BasePart"))
+                or JOB
+
+            orbitAngle += ORBIT_SPEED * dt
+            local offset = Vector3.new(
+                math.cos(orbitAngle) * ORBIT_RADIUS,
+                ORBIT_HEIGHT,
+                math.sin(orbitAngle) * ORBIT_RADIUS
+            )
+            hrp.CFrame = CFrame.new(jobPart.Position + offset, jobPart.Position)
+        end
+        return
+    end
+
+    -- ========= GarbageJob =========
+    state = HasGarbageTool() and "GO_JOB" or "GET_GARBAGE"
+
+    if state == "GET_GARBAGE" and BOX1 then
+        local boxPart = BOX1:IsA("Model")
+            and (BOX1.PrimaryPart or BOX1:FindFirstChildWhichIsA("BasePart"))
+            or BOX1
+
+        if boxPart and flyStep(boxPart.Position, dt) then
+            firePrompt(BOX1)
+            EquipGarbageTool()
+        end
+        return
+    end
+
+    if state == "GO_JOB" then
+        local jobPart = JOB:IsA("Model")
+            and (JOB.PrimaryPart or JOB:FindFirstChildWhichIsA("BasePart"))
+            or JOB
+
+        orbitAngle += ORBIT_SPEED * dt
+        local offset = Vector3.new(
+            math.cos(orbitAngle) * ORBIT_RADIUS,
+            ORBIT_HEIGHT,
+            math.sin(orbitAngle) * ORBIT_RADIUS
+        )
+        hrp.CFrame = CFrame.new(jobPart.Position + offset, jobPart.Position)
+    end
+end)
+
+CombatTab:Toggle({
+    Title = "Auto Farm",
+    Value = false,
+    Callback = function(v)
+        getgenv().AutoFarmGarbageJob = v
+        state = v and "GET_GARBAGE" or "IDLE"
+    end
+})
+
+CombatTab:Slider({
+    Title = "Fly Speed :",
+    Value = { Min = 10, Max = 50, Default = SPEED },
+    Step = 1,
+    Callback = function(v)
+        SPEED = v
+    end
+})
+
+CombatTab:Section({Title = "set Job :"})
+
+CombatTab:Dropdown({
+    Title = "เลือกงาน :",
+    Values = { "BoxPickingJob", "GarbageJob" },
+    Value = "GarbageJob",
+    Callback = function(option)
+        SELECTED_JOB = option
+        state = "GET_GARBAGE"
+    end
+})
+
+local VirtualUser = game:GetService("VirtualUser")
+
+getgenv().AntiAFK = false
+local antiAfkConnection
+
+local function startAntiAFK()
+    if antiAfkConnection then return end
+    antiAfkConnection = player.Idled:Connect(function()
+        if getgenv().AntiAFK then
+            VirtualUser:CaptureController()
+            VirtualUser:ClickButton2(Vector2.new())
+        end
+    end)
+end
+
+local function stopAntiAFK()
+    if antiAfkConnection then
+        antiAfkConnection:Disconnect()
+        antiAfkConnection = nil
+    end
+end
+
+characterTab:Toggle({
+    Title = "Anti AFK",
+    Value = false,
+    Callback = function(v)
+        getgenv().AntiAFK = v
+        if v then
+            startAntiAFK()
+        else
+            stopAntiAFK()
+        end
+    end
+})
+
+getgenv().AutoResetStuck = false
+
+local lastPos = nil
+local stuckTime = 0
+local STUCK_SPEED = 10
+local STUCK_DELAY = 1.2
+
+RunService.Heartbeat:Connect(function(dt)
+    if not getgenv().AutoResetStuck then return end
+    if not hrp or not hrp.Parent then return end
+
+    if not lastPos then
+        lastPos = hrp.Position
+        stuckTime = 0
+        return
+    end
+
+    local speed = (hrp.Position - lastPos).Magnitude / math.max(dt, 0.016)
+    lastPos = hrp.Position
+
+    if speed < STUCK_SPEED then
+        stuckTime += dt
+        if stuckTime >= STUCK_DELAY then
+            hrp.CFrame = hrp.CFrame + Vector3.new(0, 4, 0)
+            stuckTime = 0
+        end
+    else
+        stuckTime = 0
+    end
+end)
+
+characterTab:Toggle({
+    Title = "Anti Stuck",
+    Value = false,
+    Callback = function(v)
+        getgenv().AutoResetStuck = v
+        lastPos = nil
+        stuckTime = 0
+    end
+})
+
+getgenv().InfiniteJump = false
+
+local UserInputService = game:GetService("UserInputService")
+local Players = game:GetService("Players")
+local player = Players.LocalPlayer
+
+local humanoid
+
+local function updateHumanoid(char)
+    humanoid = char:WaitForChild("Humanoid", 10)
+end
+
+if player.Character then
+    updateHumanoid(player.Character)
+end
+
+player.CharacterAdded:Connect(updateHumanoid)
+
+UserInputService.JumpRequest:Connect(function()
+    if getgenv().InfiniteJump and humanoid then
+        humanoid:ChangeState(Enum.HumanoidStateType.Jumping)
+    end
+end)
+
+characterTab:Toggle({
+    Title = "Infinite Jump",
+    Value = false,
+    Callback = function(v)
+        getgenv().InfiniteJump = v
+    end
+})
+
+characterTab:Section({Title = "speed & jump :"})
+
+getgenv().SpeedHack = false
+getgenv().JumpHack = false
+
+local WALK_SPEED = 16
+local JUMP_POWER = 50
+
+local humanoid
+
+local function updateHumanoid(char)
+    humanoid = char:WaitForChild("Humanoid", 10)
+end
+
+if player.Character then
+    updateHumanoid(player.Character)
+end
+
+player.CharacterAdded:Connect(updateHumanoid)
+
+RunService.Heartbeat:Connect(function()
+    if not humanoid then return end
+
+    if getgenv().SpeedHack then
+        humanoid.WalkSpeed = WALK_SPEED
+    end
+
+    if getgenv().JumpHack then
+        humanoid.JumpPower = JUMP_POWER
+    end
+end)
+
+characterTab:Toggle({
+    Title = "Enable Speed",
+    Value = false,
+    Callback = function(v)
+        getgenv().SpeedHack = v
+        if not v and humanoid then
+            humanoid.WalkSpeed = 16
+        end
+    end
+})
+
+characterTab:Slider({
+    Title = "Walk Speed :",
+    Value = {Min = 10, Max = 300, Default = 16},
+    Step = 5,
+    Callback = function(value)
+        WALK_SPEED = value
+    end
+})
+
+characterTab:Toggle({
+    Title = "Enable Jump",
+    Value = false,
+    Callback = function(v)
+        getgenv().JumpHack = v
+        if not v and humanoid then
+            humanoid.JumpPower = 50
+        end
+    end
+})
+
+characterTab:Slider({
+    Title = "Jump Power :",
+    Value = {Min = 20, Max = 300, Default = 50},
+    Step = 5,
+    Callback = function(value)
+        JUMP_POWER = value
+    end
+})
+
+characterTab:Section({Title = "Afk zone :"})
+
+getgenv().BlackScreen = false
+
+local CoreGui = game:GetService("CoreGui")
+local blackGui
+
+local function enableBlackScreen()
+    if blackGui then return end
+
+    blackGui = Instance.new("ScreenGui")
+    blackGui.Name = "KaijuHub_BlackScreen"
+    blackGui.IgnoreGuiInset = true
+    blackGui.ResetOnSpawn = false
+    blackGui.Parent = CoreGui
+
+    local frame = Instance.new("Frame")
+    frame.Size = UDim2.fromScale(1, 1)
+    frame.Position = UDim2.fromScale(0, 0)
+    frame.BackgroundColor3 = Color3.new(0, 0, 0)
+    frame.BorderSizePixel = 0
+    frame.Parent = blackGui
+end
+
+local function disableBlackScreen()
+    if blackGui then
+        blackGui:Destroy()
+        blackGui = nil
+    end
+end
+
+characterTab:Toggle({
+    Title = "Black Screen",
+    Value = false,
+    Callback = function(v)
+        getgenv().BlackScreen = v
+        if v then
+            enableBlackScreen()
+        else
+            disableBlackScreen()
+        end
+    end
+})
+
+local function KaijuHub_BoostFPS()
+    local success, err = pcall(function()
+        local Lighting = game:GetService("Lighting")
+        local Workspace = game:GetService("Workspace")
+
+        pcall(function()
+            Lighting.GlobalShadows = false
+            Lighting.FogEnd = 1e9
+            Lighting.Brightness = 2
+            Lighting.OutdoorAmbient = Color3.fromRGB(128, 128, 128)
+            Lighting.ShadowSoftness = 0
+        end)
+
+        for _, effect in ipairs(Lighting:GetChildren()) do
+            if effect:IsA("PostEffect") then
+                pcall(function()
+                    effect.Enabled = false
+                end)
+            end
+        end
+
+        for _, obj in ipairs(Workspace:GetDescendants()) do
+            pcall(function()
+                if not obj:IsDescendantOf(game) then return end
+
+                if obj:IsA("BasePart") then
+                    obj.Material = Enum.Material.Plastic
+                    obj.Reflectance = 0
+
+                elseif obj:IsA("Decal") or obj:IsA("Texture") then
+                    obj.Transparency = 1
+
+                elseif obj:IsA("ParticleEmitter")
+                    or obj:IsA("Trail")
+                    or obj:IsA("Beam")
+                    or obj:IsA("Smoke")
+                    or obj:IsA("Fire") then
+                    obj.Enabled = false
+                end
+            end)
+        end
+    end)
+
+    if success then
+        print("✅ KaijuHub Boost FPS Applied (Safe Mode)")
+    else
+        warn("❌ KaijuHub Boost FPS Error:", err)
+    end
+end
+
+serverTab:Button({
+    Title = "Boost FPS",
+    Callback = function()
+        KaijuHub_BoostFPS()
+    end
+})
+
+local TeleportService = game:GetService("TeleportService")
+local Players = game:GetService("Players")
+local LocalPlayer = Players.LocalPlayer
+
+local function KaijuHub_Rejoin()
+    local success, err = pcall(function()
+        TeleportService:Teleport(game.PlaceId, LocalPlayer)
+    end)
+
+    if success then
+        print("🔁 Rejoining server...")
+    else
+        warn("❌ Rejoin failed:", err)
+    end
+end
+
+serverTab:Button({
+    Title = "Rejoin Server",
+    Callback = function()
+        KaijuHub_Rejoin()
+    end
+})
